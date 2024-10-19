@@ -1,3 +1,5 @@
-Node {
+Thing {
     value: num
+    foo: bar
+    foo: num
 }

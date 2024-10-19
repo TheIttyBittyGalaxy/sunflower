@@ -5,12 +5,19 @@
 
 #include "sub_string.h"
 
+// Property
+typedef struct
+{
+    sub_string name;
+    sub_string kind_name;
+} Property;
+
 // Node
 typedef struct
 {
     sub_string name;
-    sub_string property_name;
-    sub_string property_kind_name;
+    Property *properties;
+    size_t property_count;
 } Node;
 
 // Program

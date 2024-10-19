@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "parse.h"
 
@@ -11,6 +12,18 @@ typedef struct
 } Parser;
 
 // Parser methods
+bool peek(Parser *parser, TokenKind expectation)
+{
+    size_t i = parser->current_index;
+    Token t = parser->tokens.values[i];
+
+    if (expectation != LINE)
+        while (t.kind == LINE)
+            t = parser->tokens.values[++i];
+
+    return t.kind == expectation;
+}
+
 Token eat(Parser *parser, TokenKind expectation)
 {
     Token t = parser->tokens.values[parser->current_index];
@@ -54,18 +67,36 @@ void parse_program(Parser *parser)
 // Parse node declaration
 void parse_node_declaration(Parser *parser)
 {
+    Node *node = &parser->program->node;
+    node->name = NULL_SUB_STRING;
+    node->properties = NULL;
+    node->property_count = 0;
+
     Token name = eat(parser, NAME);
-    parser->program->node.name = name.str;
+    node->name = name.str;
 
     eat(parser, OPEN);
 
-    Token property_name = eat(parser, NAME);
-    parser->program->node.property_name = property_name.str;
+    while (!peek(parser, CLOSE))
+    {
+        node->property_count++;
+        if (node->property_count == 1)
+            node->properties = (Property *)malloc(sizeof(Property));
+        else
+            node->properties = (Property *)realloc(node->properties, sizeof(Property) * node->property_count);
 
-    eat(parser, COLON);
+        Property *property = node->properties + (node->property_count - 1);
+        property->name = NULL_SUB_STRING;
+        property->kind_name = NULL_SUB_STRING;
 
-    Token property_kind = eat(parser, NAME);
-    parser->program->node.property_kind_name = property_kind.str;
+        Token property_name = eat(parser, NAME);
+        property->name = property_name.str;
+
+        eat(parser, COLON);
+
+        Token property_kind = eat(parser, NAME);
+        property->kind_name = property_kind.str;
+    }
 
     eat(parser, CLOSE);
 }
