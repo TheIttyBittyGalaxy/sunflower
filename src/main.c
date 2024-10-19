@@ -61,7 +61,6 @@ int main(int argc, char const *argv[])
     Program *program = parse(source_tokens);
 
     printf("Result:\n");
-    Node node = program->node;
     print_program(program);
     printf("\n");
 

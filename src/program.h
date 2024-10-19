@@ -23,7 +23,8 @@ typedef struct
 // Program
 typedef struct
 {
-    Node node;
+    Node *nodes;
+    size_t nodes_count;
 } Program;
 
 // Strings & printing

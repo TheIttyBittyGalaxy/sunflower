@@ -7,8 +7,8 @@
 void print_program(const Program *program)
 {
     printf("PROGRAM\n");
-    printf("node = ");
-    print_node(&program->node);
+    for (size_t i = 0; i < program->nodes_count; i++)
+        print_node(program->nodes + i);
 }
 
 void print_node(const Node *node)

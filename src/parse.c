@@ -51,6 +51,8 @@ void parse_node_declaration(Parser *parser);
 Program *parse(TokenArray tokens)
 {
     Program *program = (Program *)malloc(sizeof(Program));
+    program->nodes = NULL;
+    program->nodes_count = 0;
 
     Parser parser;
     parser.program = program;
@@ -65,13 +67,24 @@ Program *parse(TokenArray tokens)
 // Parse program
 void parse_program(Parser *parser)
 {
-    parse_node_declaration(parser);
+    while (peek(parser, NAME))
+    {
+        parse_node_declaration(parser);
+    }
 }
 
 // Parse node declaration
 void parse_node_declaration(Parser *parser)
 {
-    Node *node = &parser->program->node;
+    Program *program = parser->program;
+
+    program->nodes_count++;
+    if (program->nodes_count == 1)
+        program->nodes = (Node *)malloc(sizeof(Node));
+    else
+        program->nodes = (Node *)realloc(program->nodes, sizeof(Node) * program->nodes_count);
+
+    Node *node = program->nodes + (program->nodes_count - 1);
     node->name = NULL_SUB_STRING;
     node->properties = NULL;
     node->property_count = 0;

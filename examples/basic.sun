@@ -3,3 +3,7 @@ Thing {
     foo: bar
     foo: num
 }
+
+Stuff {
+    whatever: num
+}
