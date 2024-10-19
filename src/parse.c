@@ -50,9 +50,8 @@ void parse_node_declaration(Parser *parser);
 // Parse
 Program *parse(TokenArray tokens)
 {
-    Program *program = (Program *)malloc(sizeof(Program));
-    program->nodes = NULL;
-    program->nodes_count = 0;
+    Program *program = NEW(Program);
+    INIT_ARRAY(program->nodes);
 
     Parser parser;
     parser.program = program;
@@ -78,16 +77,9 @@ void parse_node_declaration(Parser *parser)
 {
     Program *program = parser->program;
 
-    program->nodes_count++;
-    if (program->nodes_count == 1)
-        program->nodes = (Node *)malloc(sizeof(Node));
-    else
-        program->nodes = (Node *)realloc(program->nodes, sizeof(Node) * program->nodes_count);
-
-    Node *node = program->nodes + (program->nodes_count - 1);
+    Node *node = EXTEND_ARRAY(program->nodes, Node);
     node->name = NULL_SUB_STRING;
-    node->properties = NULL;
-    node->property_count = 0;
+    INIT_ARRAY(node->properties);
 
     Token name = eat(parser, NAME);
     node->name = name.str;
@@ -96,13 +88,7 @@ void parse_node_declaration(Parser *parser)
 
     while (!peek(parser, CLOSE))
     {
-        node->property_count++;
-        if (node->property_count == 1)
-            node->properties = (Property *)malloc(sizeof(Property));
-        else
-            node->properties = (Property *)realloc(node->properties, sizeof(Property) * node->property_count);
-
-        Property *property = node->properties + (node->property_count - 1);
+        Property *property = EXTEND_ARRAY(node->properties, Property);
         property->name = NULL_SUB_STRING;
         property->kind_name = NULL_SUB_STRING;
 
