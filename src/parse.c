@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "parse.h"
 
 // Parser
@@ -9,17 +11,20 @@ typedef struct
 } Parser;
 
 // Parser methods
-Token eat(Parser *parser, TokenKind token_kind)
+Token eat(Parser *parser, TokenKind expectation)
 {
     Token t = parser->tokens.values[parser->current_index];
 
-    if (token_kind != LINE)
-    {
+    if (expectation != LINE)
         while (t.kind == LINE)
             t = parser->tokens.values[++(parser->current_index)];
-    }
 
-    // TODO: Error if the token kind is incorrect!
+    // TODO: Create a language error, rather than terminating the entire program
+    if (t.kind != expectation)
+    {
+        fprintf(stderr, "Error at %d:%d, expected %s but got %s\n", t.line, t.column, token_kind_string(expectation), token_kind_string(t.kind));
+        exit(EXIT_FAILURE);
+    }
 
     parser->current_index++;
     return t;
