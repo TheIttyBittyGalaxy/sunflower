@@ -71,7 +71,7 @@ int main(int argc, char const *argv[])
     // Create quantum-map
     printf("Creating quantum map\n");
     QuantumMap *quantum_map = create_quantum_map(program);
-    printf("%d node instances, resulting in %d values\n", quantum_map->nodes_count, quantum_map->values_count);
+    printf("%d node instances, resulting in %d values\n", quantum_map->instances_count, quantum_map->values_count);
 
     printf("Result:\n");
     print_quantum_map(quantum_map);

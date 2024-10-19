@@ -7,18 +7,18 @@
 
 // CLEANUP: Figure out a better name for this than "quantum map"
 
-// QuantumNodeInstance
+// QuantumInstance
 typedef struct
 {
     Node *node;
     size_t index_to_values_array;
-} QuantumNodeInstance; // CLEANUP: Rename to "QuantumInstance"
+} QuantumInstance;
 
 // QuantumMap
 typedef struct
 {
-    QuantumNodeInstance *nodes; // CLEANUP: Rename to "instances"
-    size_t nodes_count;
+    QuantumInstance *instances;
+    size_t instances_count;
     uint64_t *values;
     size_t values_count;
 } QuantumMap;

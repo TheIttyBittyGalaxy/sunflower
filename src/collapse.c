@@ -4,14 +4,14 @@
 CollapsedMap *collapse(QuantumMap *quantum_map)
 {
     CollapsedMap *collapsed_map = NEW(CollapsedMap);
-    size_t instances_count = quantum_map->nodes_count;
+    size_t instances_count = quantum_map->instances_count;
 
     collapsed_map->instances = (CollapsedInstance *)malloc(sizeof(CollapsedInstance) * instances_count);
     collapsed_map->instances_count = instances_count;
 
     for (size_t i = 0; i < instances_count; i++)
     {
-        QuantumNodeInstance *quantum_instance = quantum_map->nodes + i;
+        QuantumInstance *quantum_instance = quantum_map->instances + i;
         CollapsedInstance *collapsed_instance = collapsed_map->instances + i;
         Node *node = quantum_instance->node;
 

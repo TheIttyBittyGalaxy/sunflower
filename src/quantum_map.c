@@ -11,8 +11,8 @@ const size_t INSTANCES_PER_NODE_DEC = 1;
 QuantumMap *create_quantum_map(Program *program)
 {
     QuantumMap *quantum_map = NEW(QuantumMap);
-    quantum_map->nodes_count = program->nodes_count * INSTANCES_PER_NODE_DEC;
-    quantum_map->nodes = (QuantumNodeInstance *)malloc(sizeof(QuantumNodeInstance) * quantum_map->nodes_count);
+    quantum_map->instances_count = program->nodes_count * INSTANCES_PER_NODE_DEC;
+    quantum_map->instances = (QuantumInstance *)malloc(sizeof(QuantumInstance) * quantum_map->instances_count);
 
     size_t instance_index = 0;
     size_t value_index = 0;
@@ -21,7 +21,7 @@ QuantumMap *create_quantum_map(Program *program)
         Node *node = program->nodes + i;
         for (size_t j = 0; j < INSTANCES_PER_NODE_DEC; j++)
         {
-            QuantumNodeInstance *instance = quantum_map->nodes + instance_index;
+            QuantumInstance *instance = quantum_map->instances + instance_index;
             instance->node = node;
             instance->index_to_values_array = value_index;
 
@@ -49,9 +49,9 @@ void print_value(uint64_t value)
 
 void print_quantum_map(QuantumMap *quantum_map)
 {
-    for (size_t i = 0; i < quantum_map->nodes_count; i++)
+    for (size_t i = 0; i < quantum_map->instances_count; i++)
     {
-        QuantumNodeInstance *instance = quantum_map->nodes + i;
+        QuantumInstance *instance = quantum_map->instances + i;
         Node *node = instance->node;
 
         printf("%03d ", i);
