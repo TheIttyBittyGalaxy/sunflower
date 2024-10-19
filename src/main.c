@@ -9,12 +9,46 @@
 
 int main(int argc, char const *argv[])
 {
-    printf("Running compiler\n\n");
+    // Validate arguments
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage: %s <file_path>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
-    // TODO: load sunflower program
-    // TEMP: Use hardcoded program instead
-    const char *source_text = "Thing{value:num\n}";
+    // Read source file
+    const char *source_path = argv[1];
+    printf("Reading source file %s\n", source_path);
+    char *source_text = NULL;
+    {
+        FILE *source_file = fopen(source_path, "rb");
 
+        if (source_file == NULL)
+        {
+            fprintf(stderr, "Error reading file %s\n", source_path);
+            return EXIT_FAILURE;
+        }
+
+        fseek(source_file, 0, SEEK_END);
+        long file_size = ftell(source_file);
+
+        source_text = (char *)malloc(file_size + 1);
+        if (source_text == NULL)
+        {
+            fclose(source_file);
+            fprintf(stderr, "Unable to allocate memory to store source text\n");
+            return EXIT_FAILURE;
+        }
+
+        fseek(source_file, 0, SEEK_SET);
+        fread(source_text, 1, file_size, source_file);
+        source_text[file_size] = '\0';
+
+        fclose(source_file);
+    }
+    printf("\n");
+
+    // Tokenise
     printf("Tokenising\n");
     TokenArray source_tokens = tokenise(source_text);
 
@@ -22,6 +56,7 @@ int main(int argc, char const *argv[])
     print_tokens(source_tokens);
     printf("\n");
 
+    // Parse
     printf("Parsing\n");
     Program *program = create_program();
     parse(program, source_tokens);
@@ -32,8 +67,8 @@ int main(int argc, char const *argv[])
     printf("\tkind = %.*s\n", program->node.property_kind_name_len, program->node.property_kind_name);
     printf("\n");
 
-    // TODO: generate executable
+    // TODO: interpret and solve
 
     printf("Compiler complete\n");
-    return 0;
+    return EXIT_SUCCESS;
 }
