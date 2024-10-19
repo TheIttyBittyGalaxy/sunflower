@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "parse.h"
+#include "program.h"
 #include "token.h"
 #include "tokenise.h"
 
@@ -7,24 +9,31 @@
 
 int main(int argc, char const *argv[])
 {
-    printf("start\n");
+    printf("Running compiler\n\n");
 
     // TODO: load sunflower program
-
     // TEMP: Use hardcoded program instead
-    const char *source_text = "Node{value:num\n}";
+    const char *source_text = "Thing{value:num\n}";
 
-    // TODO: tokenise sunflower program
-    printf("tokenise\n");
+    printf("Tokenising\n");
     TokenArray source_tokens = tokenise(source_text);
 
-    printf("tokens\n");
+    printf("Tokens:\n");
     print_tokens(source_tokens);
+    printf("\n");
 
-    // TODO: parse sunflower program
+    printf("Parsing\n");
+    Program *program = create_program();
+    parse(program, source_tokens);
+
+    printf("Result:\n");
+    printf("\tname = %.*s\n", program->node.name_len, program->node.name);
+    printf("\tprop = %.*s\n", program->node.property_name_len, program->node.property_name);
+    printf("\tkind = %.*s\n", program->node.property_kind_name_len, program->node.property_kind_name);
+    printf("\n");
 
     // TODO: generate executable
 
-    printf("complete\n");
+    printf("Compiler complete\n");
     return 0;
 }
