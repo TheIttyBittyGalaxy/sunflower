@@ -1,5 +1,6 @@
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "tokenise.h"
 
@@ -47,12 +48,12 @@ TokenArray tokenise(const char *const src)
         }
         else if (*c == '{')
         {
-            t.kind = OPEN;
+            t.kind = CURLY_L;
             c++;
         }
         else if (*c == '}')
         {
-            t.kind = CLOSE;
+            t.kind = CURLY_R;
             c++;
         }
         else if (*c == '\n')
@@ -72,6 +73,9 @@ TokenArray tokenise(const char *const src)
             t.kind = NAME;
             while (is_word_or_numeral(*(++c)))
                 t.str.len++;
+
+            if (strncmp(t.str.str, "DEF", 3) == 0)
+                t.kind = KEY_DEF;
         }
         else
         {

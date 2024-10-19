@@ -66,10 +66,12 @@ Program *parse(TokenArray tokens)
 // Parse program
 void parse_program(Parser *parser)
 {
-    while (peek(parser, NAME))
+    while (peek(parser, KEY_DEF))
     {
         parse_node_declaration(parser);
     }
+
+    eat(parser, END_OF_FILE);
 }
 
 // Parse node declaration
@@ -81,12 +83,14 @@ void parse_node_declaration(Parser *parser)
     node->name = NULL_SUB_STRING;
     INIT_ARRAY(node->properties);
 
+    eat(parser, KEY_DEF);
+
     Token name = eat(parser, NAME);
     node->name = name.str;
 
-    eat(parser, OPEN);
+    eat(parser, CURLY_L);
 
-    while (!peek(parser, CLOSE))
+    while (!peek(parser, CURLY_R))
     {
         Property *property = EXTEND_ARRAY(node->properties, Property);
         property->name = NULL_SUB_STRING;
@@ -101,5 +105,5 @@ void parse_node_declaration(Parser *parser)
         property->kind_name = property_kind.str;
     }
 
-    eat(parser, CLOSE);
+    eat(parser, CURLY_R);
 }

@@ -8,12 +8,14 @@
 // TokenKind
 typedef enum
 {
+    KEY_DEF,
+    KEY_FOR,
     NAME,
+
     COLON,
     LINE,
-
-    OPEN,
-    CLOSE,
+    CURLY_L,
+    CURLY_R,
 
     END_OF_FILE,
     INVALID_TOKEN

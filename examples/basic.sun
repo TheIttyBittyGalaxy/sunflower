@@ -1,8 +1,8 @@
-Thing {
+DEF Thing {
     a: num
     b: num
 }
 
-Stuff {
+DEF Stuff {
     c: num
 }

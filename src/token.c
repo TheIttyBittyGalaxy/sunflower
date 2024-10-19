@@ -49,16 +49,20 @@ void append_token_to_array(TokenArray *const array, const Token value)
 // Strings & printing
 const char *token_kind_string(TokenKind kind)
 {
+    if (kind == KEY_DEF)
+        return "KEY_DEF";
+    if (kind == KEY_FOR)
+        return "KEY_FOR";
     if (kind == NAME)
         return "NAME";
     if (kind == COLON)
         return "COLON";
     if (kind == LINE)
         return "LINE";
-    if (kind == OPEN)
-        return "OPEN";
-    if (kind == CLOSE)
-        return "CLOSE";
+    if (kind == CURLY_L)
+        return "CURLY_L";
+    if (kind == CURLY_R)
+        return "CURLY_R";
     if (kind == END_OF_FILE)
         return "END_OF_FILE";
     if (kind == INVALID_TOKEN)
