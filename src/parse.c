@@ -12,6 +12,13 @@ typedef struct
 Token eat(Parser *parser, TokenKind token_kind)
 {
     Token t = parser->tokens.values[parser->current_index];
+
+    if (token_kind != LINE)
+    {
+        while (t.kind == LINE)
+            t = parser->tokens.values[++(parser->current_index)];
+    }
+
     // TODO: Error if the token kind is incorrect!
 
     parser->current_index++;
