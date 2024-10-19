@@ -1,0 +1,34 @@
+#include "collapse.h"
+#include "program.h" // CLEANUP: This is only being used for access to the "NEW" macro
+
+CollapsedMap *collapse(QuantumMap *quantum_map)
+{
+    CollapsedMap *collapsed_map = NEW(CollapsedMap);
+    size_t instances_count = quantum_map->nodes_count;
+
+    collapsed_map->instances = (CollapsedInstance *)malloc(sizeof(CollapsedInstance) * instances_count);
+    collapsed_map->instances_count = instances_count;
+
+    for (size_t i = 0; i < instances_count; i++)
+    {
+        QuantumNodeInstance *quantum_instance = quantum_map->nodes + i;
+        CollapsedInstance *collapsed_instance = collapsed_map->instances + i;
+        Node *node = quantum_instance->node;
+
+        collapsed_instance->node = node;
+        collapsed_instance->values = (uint_least8_t *)malloc(sizeof(uint_least8_t) * node->properties_count);
+
+        for (size_t p = 0; p < node->properties_count; p++)
+        {
+            uint64_t value_map = quantum_map->values[quantum_instance->index_to_values_array + p];
+
+            uint_least8_t value = 0;
+            while (!(value_map & (1ULL << value)))
+                value++;
+
+            collapsed_instance->values[p] = value;
+        }
+    }
+
+    return collapsed_map;
+}

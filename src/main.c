@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "collapse.h"
+#include "collapsed_map.h"
 #include "parse.h"
 #include "program.h"
 #include "quantum_map.h"
@@ -83,7 +85,13 @@ int main(int argc, char const *argv[])
     print_quantum_map(quantum_map);
     printf("\n");
 
-    // TODO: Collapse quantum-map to regular map
+    // Collapse quantum-map to regular map
+    printf("Collapsing map\n");
+    CollapsedMap *collapsed_map = collapse(quantum_map);
+
+    printf("Result:\n");
+    print_collapsed_map(collapsed_map);
+    printf("\n");
 
     printf("Compiler complete\n");
     return EXIT_SUCCESS;

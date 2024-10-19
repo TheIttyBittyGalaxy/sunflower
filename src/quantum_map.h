@@ -12,7 +12,7 @@ typedef struct
 {
     Node *node;
     size_t index_to_values_array;
-} QuantumNodeInstance;
+} QuantumNodeInstance; // CLEANUP: Rename to "QuantumInstance"
 
 // QuantumMap
 typedef struct
