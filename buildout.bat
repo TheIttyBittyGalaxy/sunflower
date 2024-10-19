@@ -1,0 +1,1 @@
+g++ -o out out/*.c

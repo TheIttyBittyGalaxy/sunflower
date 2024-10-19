@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "generate.h"
 #include "parse.h"
 #include "program.h"
 #include "token.h"
@@ -32,7 +33,8 @@ int main(int argc, char const *argv[])
     printf("\tkind = %.*s\n", program->node.property_kind_name_len, program->node.property_kind_name);
     printf("\n");
 
-    // TODO: generate executable
+    printf("Generating:\n");
+    generate(program);
 
     printf("Compiler complete\n");
     return 0;

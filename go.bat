@@ -1,0 +1,1 @@
+g++ -o run src/*.c && run.exe && g++ -o out out/*.c && out.exe Thing=10
