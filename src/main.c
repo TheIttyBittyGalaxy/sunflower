@@ -2,7 +2,6 @@
 
 #include "token.h"
 #include "tokenise.h"
-#include "util.h"
 
 // MAIN //
 

@@ -1,22 +1,22 @@
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "tokenise.h"
-#include "util.h"
 
 // Utility functions
-boolean is_word(const char c)
+bool is_word(const char c)
 {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
            c == '_';
 }
 
-boolean is_numeral(const char c)
+bool is_numeral(const char c)
 {
     return (c >= '0' && c <= '9');
 }
 
-boolean is_word_or_numeral(const char c)
+bool is_word_or_numeral(const char c)
 {
     return is_word(c) || is_numeral(c);
 }
