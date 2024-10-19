@@ -1,1 +1,1 @@
-g++ -o run src/*.c
+g++ -o main src/*.c
