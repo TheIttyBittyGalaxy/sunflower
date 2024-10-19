@@ -9,4 +9,6 @@ typedef struct
     size_t len;
 } sub_string;
 
+#define NULL_SUB_STRING ((sub_string){.str = NULL, .len = 0})
+
 #endif
