@@ -6,6 +6,9 @@
 #include "sub_string.h"
 
 // Macros
+
+// CLEANUP: Move these marcos to their own source file
+
 #define NEW(type) (type *)malloc(sizeof(type));
 
 #define INIT_ARRAY(array) \

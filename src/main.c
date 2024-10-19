@@ -2,6 +2,7 @@
 
 #include "parse.h"
 #include "program.h"
+#include "quantum_map.h"
 #include "token.h"
 #include "tokenise.h"
 
@@ -64,7 +65,16 @@ int main(int argc, char const *argv[])
     print_program(program);
     printf("\n");
 
-    // TODO: interpret and solve
+    // Create quantum-map
+    printf("Creating quantum map\n");
+    QuantumMap *quantum_map = create_quantum_map(program);
+    printf("%d node instances, resulting in %d values\n", quantum_map->nodes_count, quantum_map->values_count);
+    print_quantum_map(quantum_map);
+    printf("\n");
+
+    // TODO: Solve quantum-map
+
+    // TODO: Collapse quantum-map to regular map
 
     printf("Compiler complete\n");
     return EXIT_SUCCESS;

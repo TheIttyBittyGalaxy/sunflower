@@ -1,9 +1,8 @@
 Thing {
-    value: num
-    foo: bar
-    foo: num
+    a: num
+    b: num
 }
 
 Stuff {
-    whatever: num
+    c: num
 }

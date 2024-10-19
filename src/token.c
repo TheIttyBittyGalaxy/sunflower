@@ -4,6 +4,10 @@
 #include "token.h"
 
 // Token array methods
+
+// CLEANUP: These functions are (should?) only be used by the tokeniser.
+//          It is probably worth factoring these functions out of existence.
+
 void initialise_token_array(TokenArray *const array, const size_t size)
 {
     array->values = size > 0
