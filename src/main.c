@@ -63,9 +63,7 @@ int main(int argc, char const *argv[])
 
     printf("Result:\n");
     Node node = program->node;
-    printf("\tname = %.*s %d\n", node.name.len, node.name.str, node.property_count);
-    printf("\tprop = %.*s\n", node.properties[0].name.len, node.properties[0].name.str);
-    printf("\tkind = %.*s\n", node.properties[0].kind_name.len, node.properties[0].kind_name.str);
+    print_program(program);
     printf("\n");
 
     // TODO: interpret and solve

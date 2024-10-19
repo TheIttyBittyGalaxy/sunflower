@@ -29,4 +29,8 @@ typedef struct
 // Create program
 Program *create_program();
 
+// Strings & printing
+void print_program(const Program *program);
+void print_node(const Node *node);
+
 #endif
