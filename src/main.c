@@ -62,9 +62,10 @@ int main(int argc, char const *argv[])
     parse(program, source_tokens);
 
     printf("Result:\n");
-    printf("\tname = %.*s\n", program->node.name_len, program->node.name);
-    printf("\tprop = %.*s\n", program->node.property_name_len, program->node.property_name);
-    printf("\tkind = %.*s\n", program->node.property_kind_name_len, program->node.property_kind_name);
+    Node node = program->node;
+    printf("\tname = %.*s\n", node.name.len, node.name.str);
+    printf("\tprop = %.*s\n", node.property_name.len, node.property_name.str);
+    printf("\tkind = %.*s\n", node.property_kind_name.len, node.property_kind_name.str);
     printf("\n");
 
     // TODO: interpret and solve

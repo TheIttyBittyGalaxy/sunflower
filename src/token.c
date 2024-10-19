@@ -65,9 +65,9 @@ const char *token_kind_string(TokenKind kind)
 void print_token(const Token t)
 {
     if (t.kind == LINE || t.kind == END_OF_FILE)
-        printf("[%d:%d %s]", t.line, t.column, token_kind_string(t.kind), t.length);
+        printf("[%d:%d %s]", t.line, t.column, token_kind_string(t.kind));
     else
-        printf("[%d:%d %s] %.*s", t.line, t.column, token_kind_string(t.kind), t.length, t.str);
+        printf("[%d:%d %s] %.*s", t.line, t.column, token_kind_string(t.kind), t.str.len, t.str.str);
 }
 
 void print_tokens(const TokenArray tokens)

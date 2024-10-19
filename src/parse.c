@@ -56,19 +56,16 @@ void parse_node_declaration(Parser *parser)
 {
     Token name = eat(parser, NAME);
     parser->program->node.name = name.str;
-    parser->program->node.name_len = name.length;
 
     eat(parser, OPEN);
 
     Token property_name = eat(parser, NAME);
     parser->program->node.property_name = property_name.str;
-    parser->program->node.property_name_len = property_name.length;
 
     eat(parser, COLON);
 
     Token property_kind = eat(parser, NAME);
     parser->program->node.property_kind_name = property_kind.str;
-    parser->program->node.property_kind_name_len = property_kind.length;
 
     eat(parser, CLOSE);
 }

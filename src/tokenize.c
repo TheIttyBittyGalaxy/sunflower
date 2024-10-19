@@ -33,12 +33,12 @@ TokenArray tokenise(const char *const src)
 
     while (*c != '\0')
     {
-        Token t = {
-            .kind = INVALID_TOKEN,
-            .str = c,
-            .length = 1,
-            .line = line,
-            .column = (size_t)(c - line_start) + 1};
+        Token t;
+        t.kind = INVALID_TOKEN;
+        t.str.str = c;
+        t.str.len = 1;
+        t.line = line;
+        t.column = (size_t)(c - line_start) + 1;
 
         if (*c == ':')
         {
@@ -71,7 +71,7 @@ TokenArray tokenise(const char *const src)
         {
             t.kind = NAME;
             while (is_word_or_numeral(*(++c)))
-                t.length++;
+                t.str.len++;
         }
         else
         {
@@ -82,8 +82,8 @@ TokenArray tokenise(const char *const src)
     }
 
     Token eof;
-    eof.str = c;
-    eof.length = 1;
+    eof.str.str = c;
+    eof.str.len = 1;
     eof.kind = END_OF_FILE;
     eof.line = line;
     eof.column = c - line_start + 1;

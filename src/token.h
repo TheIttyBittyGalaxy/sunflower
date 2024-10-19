@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include "sub_string.h"
+
 // TokenKind
 typedef enum
 {
@@ -21,8 +23,7 @@ typedef enum
 typedef struct
 {
     TokenKind kind;
-    const char *str;
-    size_t length;
+    sub_string str;
     size_t line;
     size_t column;
 } Token;
