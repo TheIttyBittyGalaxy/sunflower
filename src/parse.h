@@ -4,6 +4,6 @@
 #include "program.h"
 #include "token.h"
 
-void parse(Program *program, TokenArray tokens);
+Program *parse(TokenArray tokens);
 
 #endif

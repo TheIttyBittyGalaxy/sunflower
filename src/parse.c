@@ -48,14 +48,18 @@ void parse_program(Parser *parser);
 void parse_node_declaration(Parser *parser);
 
 // Parse
-void parse(Program *program, TokenArray tokens)
+Program *parse(TokenArray tokens)
 {
+    Program *program = (Program *)malloc(sizeof(Program));
+
     Parser parser;
     parser.program = program;
     parser.tokens = tokens;
     parser.current_index = 0;
 
     parse_program(&parser);
+
+    return program;
 }
 
 // Parse program

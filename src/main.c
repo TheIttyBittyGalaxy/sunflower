@@ -58,8 +58,7 @@ int main(int argc, char const *argv[])
 
     // Parse
     printf("Parsing\n");
-    Program *program = create_program();
-    parse(program, source_tokens);
+    Program *program = parse(source_tokens);
 
     printf("Result:\n");
     Node node = program->node;
