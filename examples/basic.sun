@@ -5,4 +5,5 @@ DEF Thing {
 
 DEF Stuff {}
 
-FOR Thing x: x.b > 32
+FOR Thing x: x.b > 10
+FOR Thing x: x.b < 20

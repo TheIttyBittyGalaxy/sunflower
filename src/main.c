@@ -102,7 +102,7 @@ int main(int argc, char const *argv[])
 
     // Solve quantum-map
     printf("Solving quantum map\n");
-    solve(quantum_map, program);
+    solve(quantum_map, arcs);
 
     printf("Result:\n");
     print_quantum_map(quantum_map);

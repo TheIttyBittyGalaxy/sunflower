@@ -56,7 +56,7 @@ typedef enum
     VARIABLE,
     BIN_OP,
 
-    ARC_VALUE,
+    ARC_VALUE, // CLEANUP: Figure out a better name for this? "ARC_VALUE" implies "the value of the arc", which does't make sense!
 } ExpressionKind;
 
 typedef enum
