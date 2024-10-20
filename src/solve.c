@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "solve.h"
 
@@ -6,8 +7,8 @@ void solve(QuantumMap *quantum_map, Program *program)
 {
     for (size_t i = 0; i < quantum_map->values_count; i++)
     {
-        uint64_t value = quantum_map->values[i];
-        if (value == 0)
+        uint64_t value_field = quantum_map->values[i];
+        if (value_field == 0)
         {
             // TODO: Handle this situation
             fprintf(stderr, "During solving, we reached a state where a value was reduced to zero possibilities.");
@@ -15,11 +16,10 @@ void solve(QuantumMap *quantum_map, Program *program)
         }
 
         // Reduce value to a single possibility
-        // TODO: Do this randomly
-        size_t d = 0;
-        while (!(value & (1ULL << d)))
-            d++;
-        quantum_map->values[i] = 1ULL << d;
+        size_t bit = rand() % 64;
+        while (!(value_field & (1ULL << bit)))
+            bit = (bit + 1) % 64;
+        quantum_map->values[i] = 1ULL << bit;
 
         // TODO: Apply constraints onto remaining values
     }

@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "collapse.h"
 #include "collapsed_map.h"
@@ -20,6 +22,9 @@ int main(int argc, char const *argv[])
         fprintf(stderr, "Usage: %s <file_path>\n", argv[0]);
         return EXIT_FAILURE;
     }
+
+    // Initialise RNG
+    srand(time(NULL));
 
     // Read source file
     const char *source_path = argv[1];
