@@ -12,8 +12,8 @@
 // Arc
 typedef struct
 {
-    size_t *value_indexes;
-    size_t value_indexes_count;
+    size_t *variable_indexes;
+    size_t variable_indexes_count;
     Expression *expr;
 } Arc;
 

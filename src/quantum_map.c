@@ -15,7 +15,7 @@ QuantumMap *create_quantum_map(Program *program)
     quantum_map->instances = (QuantumInstance *)malloc(sizeof(QuantumInstance) * quantum_map->instances_count);
 
     size_t instance_index = 0;
-    size_t value_index = 0;
+    size_t var_index = 0;
     for (size_t i = 0; i < program->nodes_count; i++)
     {
         Node *node = program->nodes + i;
@@ -23,28 +23,26 @@ QuantumMap *create_quantum_map(Program *program)
         {
             QuantumInstance *instance = quantum_map->instances + instance_index;
             instance->node = node;
-            instance->index_to_values_array = value_index;
+            instance->variables_array_index = var_index;
 
             instance_index++;
-            value_index += node->properties_count;
+            var_index += node->properties_count;
         }
     }
 
-    quantum_map->values_count = value_index;
-    quantum_map->values = (uint64_t *)malloc(sizeof(uint64_t) * quantum_map->values_count);
-    for (size_t i = 0; i < quantum_map->values_count; i++)
-        quantum_map->values[i] = UINT64_MAX;
+    quantum_map->variables_count = var_index;
+    quantum_map->variables = (uint64_t *)malloc(sizeof(uint64_t) * quantum_map->variables_count);
+    for (size_t i = 0; i < quantum_map->variables_count; i++)
+        quantum_map->variables[i] = UINT64_MAX;
 
     return quantum_map;
 }
 
 // Printing & strings
-void print_value(uint64_t value)
+void print_bitfield(uint64_t bitfield)
 {
     for (int i = 63; i >= 0; i--)
-    {
-        putchar((value & (1ULL << i)) ? '1' : '0');
-    }
+        putchar((bitfield & (1ULL << i)) ? '1' : '0');
 }
 
 void print_quantum_map(QuantumMap *quantum_map)
@@ -60,9 +58,9 @@ void print_quantum_map(QuantumMap *quantum_map)
         for (size_t p = 0; p < node->properties_count; p++)
         {
             Property *property = node->properties + p;
-            uint64_t *value = quantum_map->values + (instance->index_to_values_array + p);
+            uint64_t *var_bitfield = quantum_map->variables + (instance->variables_array_index + p);
             printf("\t%.*s: ", property->name.len, property->name.str);
-            print_value(*value);
+            print_bitfield(*var_bitfield);
             printf("\n");
         }
     }

@@ -13,7 +13,7 @@
 typedef struct
 {
     Node *node;
-    size_t index_to_values_array;
+    size_t variables_array_index;
 } QuantumInstance;
 
 // QuantumMap
@@ -21,15 +21,15 @@ typedef struct
 {
     QuantumInstance *instances;
     size_t instances_count;
-    uint64_t *values;
-    size_t values_count;
+    uint64_t *variables;
+    size_t variables_count;
 } QuantumMap;
 
 // Create quantum map
 QuantumMap *create_quantum_map(Program *program);
 
 // Printing & strings
-void print_value(uint64_t value);
+void print_bitfield(uint64_t bitfield);
 void print_quantum_map(QuantumMap *quantum_map);
 
 #endif

@@ -16,17 +16,17 @@ CollapsedMap *collapse(QuantumMap *quantum_map)
         Node *node = quantum_instance->node;
 
         collapsed_instance->node = node;
-        collapsed_instance->values = (uint_least8_t *)malloc(sizeof(uint_least8_t) * node->properties_count);
+        collapsed_instance->variables = (uint_least8_t *)malloc(sizeof(uint_least8_t) * node->properties_count);
 
         for (size_t p = 0; p < node->properties_count; p++)
         {
-            uint64_t value_map = quantum_map->values[quantum_instance->index_to_values_array + p];
+            uint64_t value_map = quantum_map->variables[quantum_instance->variables_array_index + p];
 
             uint_least8_t value = 0;
             while (!(value_map & (1ULL << value)))
                 value++;
 
-            collapsed_instance->values[p] = value;
+            collapsed_instance->variables[p] = value;
         }
     }
 

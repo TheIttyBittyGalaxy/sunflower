@@ -15,7 +15,7 @@ void print_collapsed_map(CollapsedMap *collapsed_map)
         for (size_t p = 0; p < node->properties_count; p++)
         {
             Property *property = node->properties + p;
-            uint_least8_t value = instance->values[p];
+            uint_least8_t value = instance->variables[p];
             printf("\t%.*s: %d\n", property->name.len, property->name.str, value);
         }
     }

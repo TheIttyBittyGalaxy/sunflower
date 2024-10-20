@@ -62,14 +62,14 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
 void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constraints)
 {
     Value given_value;
-    given_value.kind = NUM_VAL; // TODO: This is temporary. Eventually not all values will be numbers.
+    given_value.kind = NUM_VAL; // TODO: This is temporary. Eventually not all variables will be numbers.
 
     for (size_t i = 0; i < constraints.single_arcs_count; i++)
     {
         Arc *arc = constraints.single_arcs + i;
 
-        size_t var_index = arc->value_indexes[0];
-        uint64_t var_bitfield = quantum_map->values[var_index];
+        size_t var_index = arc->variable_indexes[0];
+        uint64_t var_bitfield = quantum_map->variables[var_index];
 
         for (int value = 0; value < 64; value++)
         {
@@ -77,14 +77,14 @@ void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constrai
             if ((var_bitfield & value_bitfield) == 0)
                 continue;
 
-            given_value.num = value; // TODO: This is temporary. Eventually not all values will be numbers.
+            given_value.num = value; // TODO: This is temporary. Eventually not all variables will be numbers.
             bool result = evaluate_arc_expression(arc->expr, &given_value).boolean;
 
             if (!result)
                 var_bitfield -= value_bitfield;
         }
 
-        quantum_map->values[var_index] = var_bitfield;
+        quantum_map->variables[var_index] = var_bitfield;
     }
 }
 
@@ -97,14 +97,14 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
     {
         Arc *arc = constraints.multi_arcs + arc_index;
 
-        size_t number_of_values = arc->value_indexes_count;
+        size_t number_of_values = arc->variable_indexes_count;
         Value *given_values = (Value *)malloc(sizeof(Value) * number_of_values);
 
         for (size_t i = 0; i < number_of_values; i++)
-            given_values[i].kind = NUM_VAL; // TODO: This is temporary. Eventually not all values will be numbers.
+            given_values[i].kind = NUM_VAL; // TODO: This is temporary. Eventually not all variables will be numbers.
 
-        size_t first_value_index = arc->value_indexes[0];
-        uint64_t first_value_field = quantum_map->values[first_value_index];
+        size_t first_value_index = arc->variable_indexes[0];
+        uint64_t first_value_field = quantum_map->variables[first_value_index];
 
         int *other_values = (int *)malloc(sizeof(int) * number_of_values);
 
@@ -124,8 +124,8 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
                 size_t n = 1;
                 while (n < number_of_values)
                 {
-                    size_t other_value_index = arc->value_indexes[n];
-                    uint64_t other_value_field = quantum_map->values[other_value_index];
+                    size_t other_value_index = arc->variable_indexes[n];
+                    uint64_t other_value_field = quantum_map->variables[other_value_index];
 
                     // While the nth value is not a possibility, increment it.
                     while ((other_value_field & (1ULL << other_values[n])) == 0)
@@ -211,7 +211,7 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
             }
         }
 
-        quantum_map->values[first_value_index] = first_value_field;
+        quantum_map->variables[first_value_index] = first_value_field;
     }
 }
 
@@ -221,21 +221,21 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
     enforce_single_arc_constrains(quantum_map, constraints);
     enforce_multi_arc_constraints(quantum_map, constraints);
 
-    for (size_t i = 0; i < quantum_map->values_count; i++)
+    for (size_t i = 0; i < quantum_map->variables_count; i++)
     {
-        uint64_t value_field = quantum_map->values[i];
-        if (value_field == 0)
+        uint64_t var_bitfield = quantum_map->variables[i];
+        if (var_bitfield == 0)
         {
             // TODO: Handle this situation
-            fprintf(stderr, "During solving, we reached a state where a value was reduced to zero possibilities.");
+            fprintf(stderr, "During solving, we reached a state where a variable  was reduced to zero possibilities.");
             exit(EXIT_FAILURE);
         }
 
-        // Reduce value to a single possibility
+        // Reduce variable to a single possibility
         size_t value = rand() % 64;
-        while ((value_field & (1ULL << value)) == 0)
+        while ((var_bitfield & (1ULL << value)) == 0)
             value = (value + 1) % 64;
-        quantum_map->values[i] = 1ULL << value;
+        quantum_map->variables[i] = 1ULL << value;
 
         enforce_multi_arc_constraints(quantum_map, constraints);
     }

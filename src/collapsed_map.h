@@ -9,7 +9,7 @@
 typedef struct
 {
     Node *node;
-    uint_least8_t *values;
+    uint_least8_t *variables;
 } CollapsedInstance;
 
 // CollapsedMap

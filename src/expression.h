@@ -34,7 +34,7 @@ typedef enum
 } Operation;
 
 // ValueKind
-// CLEANUP: Rename this to something that won't be confused with values in the map itself?
+// CLEANUP: Figure out a clearer name for this than just "value" (there are lots of things in this project that are referred to as "values")
 // CLEANUP: Prefix these enums
 typedef enum
 {
@@ -43,7 +43,7 @@ typedef enum
 } ValueKind;
 
 // Value
-// CLEANUP: Rename this to something that won't be confused with values in the map itself?
+// CLEANUP: Figure out a clearer name for this than just "value" (there are lots of things in this project that are referred to as "values")
 typedef struct
 {
     ValueKind kind;
