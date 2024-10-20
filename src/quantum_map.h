@@ -5,6 +5,8 @@
 
 #include "program.h"
 
+// CLEANUP: Split data structure and `create_quantum_map` into separate source files.
+
 // CLEANUP: Figure out a better name for this than "quantum map"
 
 // QuantumInstance

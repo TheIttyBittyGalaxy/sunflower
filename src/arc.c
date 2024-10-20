@@ -6,20 +6,20 @@
 // Convert program expression into arc
 typedef struct
 {
-    size_t value_index;
+    size_t value_offset;
     Expression *expr;
 } ConvertResult;
 
-Expression *convert_expression(ConvertResult *result, QuantumInstance *instance, Expression *program_expression);
+Expression *convert_expression(ConvertResult *result, Node *node, Expression *program_expression);
 
-ConvertResult convert(QuantumInstance *instance, Expression *program_expression)
+ConvertResult convert(Node *node, Expression *program_expression)
 {
     ConvertResult result;
-    result.expr = convert_expression(&result, instance, program_expression);
+    result.expr = convert_expression(&result, node, program_expression);
     return result;
 }
 
-Expression *convert_expression(ConvertResult *result, QuantumInstance *instance, Expression *program_expression)
+Expression *convert_expression(ConvertResult *result, Node *node, Expression *program_expression)
 {
     Expression *expr = NEW(Expression);
 
@@ -43,13 +43,15 @@ Expression *convert_expression(ConvertResult *result, QuantumInstance *instance,
                 exit(EXIT_FAILURE);
             }
 
+            // CLEANUP: This can probably be handled during the resolver stage, presumably
+            //          at the same point where we confirm the property name is valid?
             sub_string index_name = program_expression->rhs->name;
-            for (size_t i = 0; i < instance->node->properties_count; i++)
+            for (size_t i = 0; i < node->properties_count; i++)
             {
-                sub_string prop_name = (instance->node->properties + i)->name;
+                sub_string prop_name = (node->properties + i)->name;
                 if (index_name.len == prop_name.len && (strncmp(index_name.str, prop_name.str, index_name.len) == 0))
                 {
-                    result->value_index = instance->index_to_values_array + i;
+                    result->value_offset = i;
                     break;
                 }
             }
@@ -60,8 +62,8 @@ Expression *convert_expression(ConvertResult *result, QuantumInstance *instance,
         {
             expr->kind = BIN_OP;
             expr->op = program_expression->op;
-            expr->lhs = convert_expression(result, instance, program_expression->lhs);
-            expr->rhs = convert_expression(result, instance, program_expression->rhs);
+            expr->lhs = convert_expression(result, node, program_expression->lhs);
+            expr->rhs = convert_expression(result, node, program_expression->rhs);
         }
 
         break;
@@ -117,6 +119,11 @@ ArcArray create_arcs(Program *program, QuantumMap *quantum_map)
             exit(EXIT_FAILURE);
         }
 
+        // TODO: The expression that is returned by `convert` never has an "owning" reference
+        //       created for it, meaning it's not clear how it would be freed? Once it is clearer
+        //       how this should be done, fix this!
+        ConvertResult result = convert(var_node, rule->expression);
+
         for (size_t j = 0; j < quantum_map->instances_count; j++)
         {
             QuantumInstance *instance = quantum_map->instances + j;
@@ -124,8 +131,7 @@ ArcArray create_arcs(Program *program, QuantumMap *quantum_map)
                 continue;
 
             Arc *arc = EXTEND_ARRAY(array.arcs, Arc);
-            ConvertResult result = convert(instance, rule->expression);
-            arc->value_index = result.value_index;
+            arc->value_index = instance->index_to_values_array + result.value_offset;
             arc->expr = result.expr;
         }
     }

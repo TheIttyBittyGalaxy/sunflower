@@ -6,6 +6,8 @@
 #include "program.h"
 #include "quantum_map.h"
 
+// CLEANUP: Split data structure and `create_arcs` into separate source files.
+
 // Arc
 typedef struct
 {
