@@ -109,22 +109,37 @@ void print_expression(const Expression *expr)
     switch (expr->kind)
     {
     case UNRESOLVED_NAME:
+    {
+        printf("%.*s?", expr->name.len, expr->name.str);
+        break;
+    }
+
     case PROPERTY_NAME:
     {
         printf("%.*s", expr->name.len, expr->name.str);
         break;
     }
+
     case BIN_OP:
     {
-        putchar('(');
-        print_expression(expr->lhs);
-        putchar(' ');
-        putchar((".<>≤≥=")[expr->op]);
-        putchar(' ');
-        print_expression(expr->rhs);
-        putchar(')');
+        char op = (".<>≤≥=")[expr->op];
+        if (precedence_of(expr->op) == 1)
+        {
+            print_expression(expr->lhs);
+            putchar(op);
+            print_expression(expr->rhs);
+        }
+        else
+        {
+            putchar('(');
+            print_expression(expr->lhs);
+            printf(" %c ", op);
+            print_expression(expr->rhs);
+            putchar(')');
+        }
         break;
     }
+
     default:
     {
         fprintf(stderr, "Internal error: Could print %s Expression", expression_kind_string(expr->kind));
