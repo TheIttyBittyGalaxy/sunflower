@@ -42,6 +42,9 @@ const char *expression_kind_string(ExpressionKind kind)
     if (kind == BIN_OP)
         return "BIN_OP";
 
+    if (kind == ARC_VALUE)
+        return "ARC_VALUE";
+
     return "INVALID_EXPRESSION_KIND";
 }
 
@@ -149,6 +152,12 @@ void print_expression(const Expression *expr)
             print_expression(expr->rhs);
             putchar(')');
         }
+        break;
+    }
+
+    case ARC_VALUE:
+    {
+        printf("[VALUE]");
         break;
     }
 

@@ -3,4 +3,6 @@ DEF Thing {
     b: num
 }
 
-FOR Thing x: x.a > 32
+DEF Stuff {}
+
+FOR Thing x: x.b > 32

@@ -55,6 +55,8 @@ typedef enum
     NUMBER_LITERAL,
     VARIABLE,
     BIN_OP,
+
+    ARC_VALUE,
 } ExpressionKind;
 
 typedef enum

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "arc.h"
 #include "collapse.h"
 #include "collapsed_map.h"
 #include "parse.h"
@@ -89,6 +90,14 @@ int main(int argc, char const *argv[])
 
     printf("Result:\n");
     print_quantum_map(quantum_map);
+    printf("\n");
+
+    // Create arcs
+    printf("Creating arcs\n");
+    ArcArray arcs = create_arcs(program, quantum_map);
+
+    printf("Result:\n");
+    print_arcs(arcs);
     printf("\n");
 
     // Solve quantum-map
