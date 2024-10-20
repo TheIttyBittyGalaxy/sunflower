@@ -3,6 +3,7 @@
 #include "collapse.h"
 #include "collapsed_map.h"
 #include "parse.h"
+#include "resolve.h"
 #include "program.h"
 #include "quantum_map.h"
 #include "solve.h"
@@ -63,6 +64,14 @@ int main(int argc, char const *argv[])
     // Parse
     printf("Parsing\n");
     Program *program = parse(source_tokens);
+
+    printf("Result:\n");
+    print_program(program);
+    printf("\n");
+
+    // Resolve
+    printf("Resolving\n");
+    resolve(program);
 
     printf("Result:\n");
     print_program(program);
