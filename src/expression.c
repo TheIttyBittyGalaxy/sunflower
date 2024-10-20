@@ -106,18 +106,18 @@ void print_expression(const Expression *expr)
 
     case BIN_OP:
     {
-        char op = (".<>≤≥=")[expr->op];
+        const char *op = (const char *[]){".", "<", ">", "≤", "≥", "="}[expr->op];
         if (precedence_of(expr->op) == 1)
         {
             print_expression(expr->lhs);
-            putchar(op);
+            printf(op);
             print_expression(expr->rhs);
         }
         else
         {
             putchar('(');
             print_expression(expr->lhs);
-            printf(" %c ", op);
+            printf(" %s ", op);
             print_expression(expr->rhs);
             putchar(')');
         }
