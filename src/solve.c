@@ -61,10 +61,12 @@ Value evaluate_arc_expression(Expression *expr, Value given_value)
 // Apply arc constraints
 void apply_arc_constraints(QuantumMap *quantum_map, ArcArray arcs)
 {
+    // NOTE: This function is designed to handle arcs that constrain exactly one value
+
     for (size_t i = 0; i < arcs.arcs_count; i++)
     {
         Arc *arc = arcs.arcs + i;
-        uint64_t value_field = quantum_map->values[arc->value_index];
+        uint64_t value_field = quantum_map->values[arc->value_indexes[0]];
 
         for (int value = 0; value < 64; value++)
         {
@@ -76,7 +78,7 @@ void apply_arc_constraints(QuantumMap *quantum_map, ArcArray arcs)
                 value_field -= (1ULL << value);
         }
 
-        quantum_map->values[arc->value_index] = value_field;
+        quantum_map->values[arc->value_indexes[0]] = value_field;
     }
 }
 

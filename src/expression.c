@@ -126,7 +126,7 @@ void print_expression(const Expression *expr)
 
     case ARC_VALUE:
     {
-        printf("[VALUE]");
+        printf("[%d]", expr->index);
         break;
     }
 

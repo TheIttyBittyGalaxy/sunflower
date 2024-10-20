@@ -1,9 +1,7 @@
 DEF Thing {
     a: num
     b: num
+    c: num
 }
 
-DEF Stuff {}
-
-FOR Thing x: x.b > 10
-FOR Thing x: x.b < 20
+FOR Thing x: x.c > x.a = x.c > x.b

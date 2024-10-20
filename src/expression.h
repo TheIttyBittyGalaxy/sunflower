@@ -84,7 +84,10 @@ struct Expression
             Expression *lhs;
             Expression *rhs;
         };
-        // ARC_VALUE (no attributes required)
+        struct // ARC_VALUE
+        {
+            size_t index;
+        };
     };
 };
 
