@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "parse.h"
 
@@ -46,12 +47,17 @@ Token eat(Parser *parser, TokenKind expectation)
 // Parse methods
 void parse_program(Parser *parser);
 void parse_node_declaration(Parser *parser);
+void parse_rule(Parser *parser);
+Expression *parse_expression(Parser *parser);
+Expression *parse_expression_prefix(Parser *parser, size_t precedence);
+Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t precedence);
 
 // Parse
 Program *parse(TokenArray tokens)
 {
     Program *program = NEW(Program);
     INIT_ARRAY(program->nodes);
+    INIT_ARRAY(program->rules);
 
     Parser parser;
     parser.program = program;
@@ -66,9 +72,14 @@ Program *parse(TokenArray tokens)
 // Parse program
 void parse_program(Parser *parser)
 {
-    while (peek(parser, KEY_DEF))
+    while (true)
     {
-        parse_node_declaration(parser);
+        if (peek(parser, KEY_DEF))
+            parse_node_declaration(parser);
+        else if (peek(parser, KEY_FOR))
+            parse_rule(parser);
+        else
+            break;
     }
 
     eat(parser, END_OF_FILE);
@@ -106,4 +117,118 @@ void parse_node_declaration(Parser *parser)
     }
 
     eat(parser, CURLY_R);
+}
+
+// Parse rule
+void parse_rule(Parser *parser)
+{
+    Program *program = parser->program;
+
+    Rule *rule = EXTEND_ARRAY(program->rules, Rule);
+    INIT_ARRAY(rule->variables);
+
+    eat(parser, KEY_FOR);
+
+    while (peek(parser, NAME))
+    {
+        Variable *variable = EXTEND_ARRAY(rule->variables, Variable);
+
+        Token node_name = eat(parser, NAME);
+        variable->node_name = node_name.str;
+
+        Token name = eat(parser, NAME);
+        variable->name = name.str;
+    }
+
+    eat(parser, COLON);
+
+    rule->expression = parse_expression(parser);
+}
+
+// Parse expression
+Expression *parse_expression(Parser *parser)
+{
+    return parse_expression_prefix(parser, MIN_PRECEDENCE);
+}
+
+Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
+{
+    Expression *expr = NULL;
+
+    // (expression)
+    if (peek(parser, PAREN_L))
+    {
+        eat(parser, PAREN_L);
+        expr = parse_expression(parser);
+        eat(parser, PAREN_R);
+    }
+
+    // Unresolved name
+    else if (peek(parser, NAME))
+    {
+        Token t = eat(parser, NAME);
+        expr = NEW(Expression);
+        expr->kind = UNRESOLVED_NAME;
+        expr->name = t.str;
+    }
+
+    // Error if prefix not found
+    if (expr == NULL)
+    {
+        Token t = parser->tokens.values[parser->current_index];
+        fprintf(stderr, "Error at %d:%d, expected expression but got %s\n", t.line, t.column, token_kind_string(t.kind));
+        exit(EXIT_FAILURE);
+    }
+
+    // Parse expression with infix
+    while (true)
+    {
+        Expression *full_expr = parse_expression_infix(parser, expr, max_precedence);
+        if (expr == full_expr)
+            break;
+        expr = full_expr;
+    }
+
+    return expr;
+}
+
+Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_precedence)
+{
+    Operation infix_op;
+    Token t = parser->tokens.values[parser->current_index];
+
+    if (strncmp(t.str.str, ".", 1) == 0)
+        infix_op = INDEX;
+    else if (strncmp(t.str.str, "=", 1) == 0)
+        infix_op = EQUAL_TO;
+    else if (strncmp(t.str.str, "<", 1) == 0)
+        infix_op = LESS_THAN;
+    else if (strncmp(t.str.str, ">", 1) == 0)
+        infix_op = MORE_THAN;
+    else if (strncmp(t.str.str, "<=", 2) == 0)
+        infix_op = LESS_THAN_OR_EQUAL;
+    else if (strncmp(t.str.str, ">=", 2) == 0)
+        infix_op = MORE_THAN_OR_EQUAL;
+
+    else
+        return lhs;
+
+    size_t infix_op_precedence = precedence_of(infix_op);
+
+    if (infix_op_precedence <= max_precedence)
+    {
+        eat(parser, t.kind);
+
+        Expression *expr = NEW(Expression);
+        expr->kind = BIN_OP;
+        expr->lhs = lhs;
+        expr->op = infix_op;
+        expr->rhs = parse_expression_prefix(parser, infix_op_precedence);
+
+        return expr;
+    }
+    else
+    {
+        return lhs;
+    }
 }

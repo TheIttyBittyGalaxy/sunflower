@@ -13,9 +13,15 @@ typedef enum
     NAME,
 
     COLON,
+    DOT,
     LINE,
+
+    PAREN_L,
+    PAREN_R,
     CURLY_L,
     CURLY_R,
+    ARROW_L,
+    ARROW_R,
 
     END_OF_FILE,
     INVALID_TOKEN

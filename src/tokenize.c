@@ -46,6 +46,21 @@ TokenArray tokenise(const char *const src)
             t.kind = COLON;
             c++;
         }
+        else if (*c == '.')
+        {
+            t.kind = DOT;
+            c++;
+        }
+        else if (*c == '(')
+        {
+            t.kind = PAREN_L;
+            c++;
+        }
+        else if (*c == ')')
+        {
+            t.kind = PAREN_R;
+            c++;
+        }
         else if (*c == '{')
         {
             t.kind = CURLY_L;
@@ -54,6 +69,16 @@ TokenArray tokenise(const char *const src)
         else if (*c == '}')
         {
             t.kind = CURLY_R;
+            c++;
+        }
+        else if (*c == '<')
+        {
+            t.kind = ARROW_L;
+            c++;
+        }
+        else if (*c == '>')
+        {
+            t.kind = ARROW_R;
             c++;
         }
         else if (*c == '\n')
@@ -76,6 +101,8 @@ TokenArray tokenise(const char *const src)
 
             if (strncmp(t.str.str, "DEF", 3) == 0)
                 t.kind = KEY_DEF;
+            else if (strncmp(t.str.str, "FOR", 3) == 0)
+                t.kind = KEY_FOR;
         }
         else
         {

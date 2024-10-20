@@ -55,18 +55,32 @@ const char *token_kind_string(TokenKind kind)
         return "KEY_FOR";
     if (kind == NAME)
         return "NAME";
+
     if (kind == COLON)
         return "COLON";
+    if (kind == DOT)
+        return "DOT";
     if (kind == LINE)
         return "LINE";
+
+    if (kind == PAREN_L)
+        return "PAREN_L";
+    if (kind == PAREN_R)
+        return "PAREN_R";
     if (kind == CURLY_L)
         return "CURLY_L";
     if (kind == CURLY_R)
         return "CURLY_R";
+    if (kind == ARROW_L)
+        return "ARROW_L";
+    if (kind == ARROW_R)
+        return "ARROW_R";
+
     if (kind == END_OF_FILE)
         return "END_OF_FILE";
     if (kind == INVALID_TOKEN)
         return "INVALID_TOKEN";
+
     return "INVALID_TOKEN_KIND";
 }
 
