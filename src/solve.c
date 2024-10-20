@@ -2,28 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "program.h" // CLEANUP: Should this be "expression.h" ?
+#include "expression.h"
 #include "solve.h"
 
 // Evaluate arc expression
-// CLEANUP: Put this into an "expression.h"
-
-typedef enum
-{
-    NUM_VAL,
-    BOOL_VAL
-} ValueKind;
-
-typedef struct
-{
-    ValueKind kind;
-    union
-    {
-        int num;
-        bool boolean;
-    };
-} Value;
-
 Value evaluate_arc_expression(Expression *expr, Value given_value)
 {
     switch (expr->kind)

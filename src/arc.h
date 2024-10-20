@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+#include "expression.h"
 #include "program.h"
 #include "quantum_map.h"
 
@@ -12,7 +13,7 @@
 typedef struct
 {
     size_t value_index;
-    Expression *expr; // CLEANUP: Factor `Expression` into it's own source file
+    Expression *expr;
 } Arc;
 
 // ArcArray
