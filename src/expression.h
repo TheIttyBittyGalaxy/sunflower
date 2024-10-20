@@ -13,7 +13,7 @@ typedef enum
     UNRESOLVED_NAME,
     PROPERTY_NAME,
     NUMBER_LITERAL,
-    VARIABLE,
+    PLACEHOLDER,
     BIN_OP,
 
     ARC_VALUE, // CLEANUP: Figure out a better name for this? "ARC_VALUE" implies "the value of the arc", which does't make sense!
@@ -54,9 +54,9 @@ typedef struct
     };
 } Value;
 
-// Forward declarations for references to Program nodes
+// Forward declarations for Program nodes
 // (We cannot include "program.h" as this would create a cyclic include)
-typedef struct Variable Variable;
+typedef struct Placeholder Placeholder;
 
 // Expression
 typedef struct Expression Expression;
@@ -74,9 +74,9 @@ struct Expression
         {
             int number;
         };
-        struct // VARIABLE
+        struct // PLACEHOLDER
         {
-            Variable *var;
+            Placeholder *placeholder;
         };
         struct // BIN_OP
         {

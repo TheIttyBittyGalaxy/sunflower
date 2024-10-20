@@ -125,19 +125,19 @@ void parse_rule(Parser *parser)
     Program *program = parser->program;
 
     Rule *rule = EXTEND_ARRAY(program->rules, Rule);
-    INIT_ARRAY(rule->variables);
+    INIT_ARRAY(rule->placeholders);
 
     eat(parser, KEY_FOR);
 
     while (peek(parser, NAME))
     {
-        Variable *variable = EXTEND_ARRAY(rule->variables, Variable);
+        Placeholder *placeholder = EXTEND_ARRAY(rule->placeholders, Placeholder);
 
         Token node_name = eat(parser, NAME);
-        variable->node_name = node_name.str;
+        placeholder->node_name = node_name.str;
 
         Token name = eat(parser, NAME);
-        variable->name = name.str;
+        placeholder->name = name.str;
     }
 
     eat(parser, COLON);

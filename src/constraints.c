@@ -77,7 +77,7 @@ Expression *convert_expression(ArcInformation *arc_info, Node *node, Expression 
         {
             // TODO: This way of converting an index is a bit of a hack.
             //       This will need to change to generalise to most expressions.
-            if (program_expression->lhs->kind != VARIABLE || program_expression->rhs->kind != PROPERTY_NAME)
+            if (program_expression->lhs->kind != PLACEHOLDER || program_expression->rhs->kind != PROPERTY_NAME)
             {
                 fprintf(stderr, "Internal error, could not resolve index expression");
                 print_expression(program_expression);
@@ -165,44 +165,44 @@ Constraints create_constraints(Program *program, QuantumMap *quantum_map)
     {
         Rule *rule = program->rules + i;
 
-        // TODO: Create arcs for rules with multiple variables
-        if (rule->variables_count != 1)
+        // TODO: Create arcs for rules with multiple placeholders
+        if (rule->placeholders_count != 1)
         {
-            printf("Rules with multiple variables (or no variables?) not yet supported:\n");
+            printf("Rules with multiple placeholders (or no placeholders?) not yet supported:\n");
             print_rule(rule);
             continue;
         }
 
-        // NOTE: The following code is designed for rules with exactly one variable.
-        Variable *var = rule->variables;
+        // NOTE: The following code is designed for rules with exactly one placeholder.
+        Placeholder *placeholder = rule->placeholders;
 
         // CLEANUP: Ideally, this resolution should have happened at a previous stage
-        Node *var_node = NULL;
+        Node *placeholder_node_type = NULL;
         for (size_t n = 0; n < program->nodes_count; n++)
         {
             Node *node = program->nodes + n;
-            if (node->name.len == var->node_name.len && (strncmp(node->name.str, var->node_name.str, node->name.len) == 0))
+            if (node->name.len == placeholder->node_name.len && (strncmp(node->name.str, placeholder->node_name.str, node->name.len) == 0))
             {
-                var_node = node;
+                placeholder_node_type = node;
                 break;
             }
         }
 
-        if (!var_node)
+        if (!placeholder_node_type)
         {
-            fprintf(stderr, "Could not find node with name %.*s", var->node_name.len, var->node_name.str);
+            fprintf(stderr, "Could not find node with name %.*s", placeholder->node_name.len, placeholder->node_name.str);
             exit(EXIT_FAILURE);
         }
 
         // TODO: The expression that is returned by `convert` never has an "owning" reference
         //       created for it, meaning it's not clear how it would be freed? Once it is clearer
         //       how this should be done, fix this!
-        ArcInformation arc_info = convert(var_node, rule->expression);
+        ArcInformation arc_info = convert(placeholder_node_type, rule->expression);
 
         for (size_t j = 0; j < quantum_map->instances_count; j++)
         {
             QuantumInstance *instance = quantum_map->instances + j;
-            if (instance->node != var_node)
+            if (instance->node != placeholder_node_type)
                 continue;
 
             // Arcs that constrain a single value

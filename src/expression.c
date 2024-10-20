@@ -37,8 +37,8 @@ const char *expression_kind_string(ExpressionKind kind)
         return "UNRESOLVED_NAME";
     if (kind == PROPERTY_NAME)
         return "PROPERTY_NAME";
-    if (kind == VARIABLE)
-        return "VARIABLE";
+    if (kind == PLACEHOLDER)
+        return "PLACEHOLDER";
     if (kind == BIN_OP)
         return "BIN_OP";
 
@@ -98,9 +98,9 @@ void print_expression(const Expression *expr)
         break;
     }
 
-    case VARIABLE:
+    case PLACEHOLDER:
     {
-        printf("!%.*s", expr->var->name.len, expr->var->name.str);
+        printf("!%.*s", expr->placeholder->name.len, expr->placeholder->name.str);
         break;
     }
 

@@ -32,12 +32,12 @@ void print_node(const Node *node)
 void print_rule(const Rule *rule)
 {
     printf("\t\t");
-    for (size_t i = 0; i < rule->variables_count; i++)
+    for (size_t i = 0; i < rule->placeholders_count; i++)
     {
         if (i > 0)
             printf(", ");
-        Variable var = rule->variables[i];
-        printf("%.*s %.*s", var.node_name.len, var.node_name.str, var.name.len, var.name.str);
+        Placeholder placeholder = rule->placeholders[i];
+        printf("%.*s %.*s", placeholder.node_name.len, placeholder.node_name.str, placeholder.name.len, placeholder.name.str);
     }
     printf(" -> ");
     print_expression(rule->expression);

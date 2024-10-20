@@ -32,8 +32,8 @@ void resolve_node(Program *program, Node *node)
 
 void resolve_rule(Program *program, Rule *rule)
 {
-    // TODO: Check that there are no duplicate variable names
-    // TODO: Resolve variables types
+    // TODO: Check that there are no duplicate placeholder names
+    // TODO: Resolve placeholders types
 
     rule->expression = resolve_expression(program, rule, rule->expression);
 }
@@ -43,20 +43,20 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
     if (expr->kind == UNRESOLVED_NAME)
     {
         sub_string name = expr->name;
-        for (size_t i = 0; i < rule->variables_count; i++)
+        for (size_t i = 0; i < rule->placeholders_count; i++)
         {
-            Variable *var = rule->variables + i;
-            sub_string var_name = var->name;
+            Placeholder *placeholder = rule->placeholders + i;
+            sub_string var_name = placeholder->name;
             if (name.len == var_name.len && strncmp(name.str, var_name.str, name.len) == 0)
             {
-                expr->kind = VARIABLE;
-                expr->var = var;
+                expr->kind = PLACEHOLDER;
+                expr->placeholder = placeholder;
                 return expr;
             }
         }
 
         // TODO: Report line number and column
-        fprintf(stderr, "Error. Variable %.*s does not exist\n", name.len, name.str);
+        fprintf(stderr, "Error. Placeholder %.*s does not exist\n", name.len, name.str);
         exit(EXIT_FAILURE);
     }
 

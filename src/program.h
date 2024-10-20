@@ -41,10 +41,10 @@ typedef struct
     size_t properties_count;
 } Node;
 
-// Variable
-// Variable is declared differently here as it is forward declared in "expression.h"
+// Placeholder
+// Placeholder is declared differently here as it is forward declared in "expression.h"
 // CLEANUP: Is there a better way of doing this?
-struct Variable
+struct Placeholder
 {
     sub_string name;
     sub_string node_name;
@@ -53,8 +53,8 @@ struct Variable
 // Rule
 typedef struct
 {
-    Variable *variables;
-    size_t variables_count;
+    Placeholder *placeholders;
+    size_t placeholders_count;
     Expression *expression;
 } Rule;
 
