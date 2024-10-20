@@ -20,8 +20,10 @@ typedef struct
 // Constraints
 typedef struct
 {
-    Arc *arcs;
-    size_t arcs_count;
+    Arc *single_arcs;
+    size_t single_arcs_count;
+    Arc *multi_arcs;
+    size_t multi_arcs_count;
 } Constraints;
 
 // Create constraints

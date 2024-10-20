@@ -158,7 +158,8 @@ Expression *copy_arc_expr_with_rotation(Expression *original_expr, size_t rotati
 Constraints create_constraints(Program *program, QuantumMap *quantum_map)
 {
     Constraints constraints;
-    INIT_ARRAY(constraints.arcs);
+    INIT_ARRAY(constraints.single_arcs);
+    INIT_ARRAY(constraints.multi_arcs);
 
     for (size_t i = 0; i < program->rules_count; i++)
     {
@@ -204,17 +205,33 @@ Constraints create_constraints(Program *program, QuantumMap *quantum_map)
             if (instance->node != var_node)
                 continue;
 
-            for (size_t rotation = 0; rotation < arc_info.value_info_map_count; rotation++)
+            // Arcs that constrain a single value
+            if (arc_info.value_info_map_count == 1)
             {
-                Arc *arc = EXTEND_ARRAY(constraints.arcs, Arc);
-                arc->expr = arc_info.exprs + rotation;
+                Arc *arc = EXTEND_ARRAY(constraints.single_arcs, Arc);
+                arc->expr = arc_info.exprs;
                 arc->value_indexes_count = arc_info.value_info_map_count;
                 arc->value_indexes = (size_t *)malloc(sizeof(size_t) * arc->value_indexes_count);
-
                 for (size_t v = 0; v < arc_info.value_info_map_count; v++)
+                    arc->value_indexes[v] = instance->index_to_values_array + arc_info.value_info_map[v].property_offset;
+            }
+
+            // Arcs that constrain multiple values
+            else
+            {
+                for (size_t rotation = 0; rotation < arc_info.value_info_map_count; rotation++)
                 {
-                    size_t n = (v + rotation) % arc_info.value_info_map_count;
-                    arc->value_indexes[n] = instance->index_to_values_array + arc_info.value_info_map[v].property_offset;
+                    Arc *arc = EXTEND_ARRAY(constraints.multi_arcs, Arc);
+
+                    arc->expr = arc_info.exprs + rotation;
+                    arc->value_indexes_count = arc_info.value_info_map_count;
+                    arc->value_indexes = (size_t *)malloc(sizeof(size_t) * arc->value_indexes_count);
+
+                    for (size_t v = 0; v < arc_info.value_info_map_count; v++)
+                    {
+                        size_t n = (v + rotation) % arc_info.value_info_map_count;
+                        arc->value_indexes[n] = instance->index_to_values_array + arc_info.value_info_map[v].property_offset;
+                    }
                 }
             }
         }
@@ -235,6 +252,8 @@ void print_arc(Arc *arc)
 
 void print_constraints(Constraints constraints)
 {
-    for (size_t i = 0; i < constraints.arcs_count; i++)
-        print_arc(constraints.arcs + i);
+    for (size_t i = 0; i < constraints.single_arcs_count; i++)
+        print_arc(constraints.single_arcs + i);
+    for (size_t i = 0; i < constraints.multi_arcs_count; i++)
+        print_arc(constraints.multi_arcs + i);
 }

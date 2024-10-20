@@ -59,11 +59,43 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
 }
 
 // Apply arc constraints
-void apply_arc_constraints(QuantumMap *quantum_map, Constraints constraints)
+void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constraints)
 {
-    for (size_t arc_index = 0; arc_index < constraints.arcs_count; arc_index++)
+    Value given_value;
+    given_value.kind = NUM_VAL; // TODO: This is temporary. Eventually not all values will be numbers.
+
+    for (size_t i = 0; i < constraints.single_arcs_count; i++)
     {
-        Arc *arc = constraints.arcs + arc_index;
+        Arc *arc = constraints.single_arcs + i;
+
+        size_t var_index = arc->value_indexes[0];
+        uint64_t var_bitfield = quantum_map->values[var_index];
+
+        for (int value = 0; value < 64; value++)
+        {
+            uint64_t value_bitfield = (1ULL << value);
+            if ((var_bitfield & value_bitfield) == 0)
+                continue;
+
+            given_value.num = value; // TODO: This is temporary. Eventually not all values will be numbers.
+            bool result = evaluate_arc_expression(arc->expr, &given_value).boolean;
+
+            if (!result)
+                var_bitfield -= value_bitfield;
+        }
+
+        quantum_map->values[var_index] = var_bitfield;
+    }
+}
+
+// CLEANUP: This code is confusing! Most of the complexity arises from trying to iterate the
+//          other values. With some care, I imagine this could be implemented in a better way.
+
+void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constraints)
+{
+    for (size_t arc_index = 0; arc_index < constraints.multi_arcs_count; arc_index++)
+    {
+        Arc *arc = constraints.multi_arcs + arc_index;
 
         size_t number_of_values = arc->value_indexes_count;
         Value *given_values = (Value *)malloc(sizeof(Value) * number_of_values);
@@ -74,128 +106,108 @@ void apply_arc_constraints(QuantumMap *quantum_map, Constraints constraints)
         size_t first_value_index = arc->value_indexes[0];
         uint64_t first_value_field = quantum_map->values[first_value_index];
 
-        // CLEANUP: We only need to evaluate all the single constraint arcs once - when solving begins
-        if (number_of_values == 1)
+        int *other_values = (int *)malloc(sizeof(int) * number_of_values);
+
+        for (int value = 0; value < 64; value++)
         {
-            for (int value = 0; value < 64; value++)
+            if ((first_value_field & (1ULL << value)) == 0)
+                continue;
+
+            // 1. Init `i`s for each other value
+            for (size_t n = 1; n < number_of_values; n++)
+                other_values[n] = 0;
+
+            bool first_value_is_possible = false;
+            while (true)
             {
-                if ((first_value_field & (1ULL << value)) == 0)
-                    continue;
-
-                given_values[0].num = value; // TODO: This is temporary. Eventually not all values will be numbers.
-                Value result = evaluate_arc_expression(arc->expr, given_values);
-                if (result.boolean == false)
-                    first_value_field -= (1ULL << value);
-            }
-        }
-
-        // CLEANUP: This code is confusing! Most of the complexity arises from trying to iterate the
-        //          other values. With some care, I imagine this could be implemented in a better way.
-        else
-        {
-            int *other_values = (int *)malloc(sizeof(int) * number_of_values);
-
-            for (int value = 0; value < 64; value++)
-            {
-                if ((first_value_field & (1ULL << value)) == 0)
-                    continue;
-
-                // 1. Init `i`s for each other value
-                for (size_t n = 1; n < number_of_values; n++)
-                    other_values[n] = 0;
-
-                bool first_value_is_possible = false;
-                while (true)
+                // 2. If the current set of other values is not possible, increment until it is
+                size_t n = 1;
+                while (n < number_of_values)
                 {
-                    // 2. If the current set of other values is not possible, increment until it is
-                    size_t n = 1;
-                    while (n < number_of_values)
+                    size_t other_value_index = arc->value_indexes[n];
+                    uint64_t other_value_field = quantum_map->values[other_value_index];
+
+                    // While the nth value is not a possibility, increment it.
+                    while ((other_value_field & (1ULL << other_values[n])) == 0)
                     {
-                        size_t other_value_index = arc->value_indexes[n];
-                        uint64_t other_value_field = quantum_map->values[other_value_index];
-
-                        // While the nth value is not a possibility, increment it.
-                        while ((other_value_field & (1ULL << other_values[n])) == 0)
-                        {
-                            other_values[n]++;
-                            if (other_values[n] == 64)
-                                break;
-                        }
-
-                        // If we've iterated through all possibilities for the nth value
+                        other_values[n]++;
                         if (other_values[n] == 64)
-                        {
-                            while (other_values[n] == 64)
-                            {
-                                n++;
-                                if (n >= number_of_values)
-                                    break;
-                                else
-                                    other_values[n]++;
-                            }
+                            break;
+                    }
 
-                            if (n >= number_of_values)
-                                break;
-
-                            for (size_t s = 1; s < n; s++)
-                                other_values[s] = 0;
-
-                            n = 1;
-                        }
-
-                        // The nth value is now possible. Increment n to ensure that the next value is also possible.
-                        else if (n + 1 < number_of_values)
+                    // If we've iterated through all possibilities for the nth value
+                    if (other_values[n] == 64)
+                    {
+                        while (other_values[n] == 64)
                         {
                             n++;
+                            if (n >= number_of_values)
+                                break;
+                            else
+                                other_values[n]++;
                         }
 
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    if (n >= number_of_values)
-                        break;
-
-                    // 3. Evaluate the expression given that possibility
-
-                    // TODO: Allow this to accept multiple values
-                    given_values[0].num = value;
-                    for (size_t v = 1; v < number_of_values; v++)
-                        given_values[v].num = other_values[v];
-
-                    Value result = evaluate_arc_expression(arc->expr, given_values);
-
-                    // 4. if the result is true, we know the first value is possible
-                    if (result.boolean == true)
-                    {
-                        first_value_is_possible = true;
-                        break;
-                    }
-
-                    // 5. Increment the other value(s)
-                    n = 1;
-                    other_values[n]++;
-
-                    while (other_values[n] == 64)
-                    {
-                        other_values[n] = 0;
-                        n++;
                         if (n >= number_of_values)
                             break;
-                        else
-                            other_values[n]++;
+
+                        for (size_t s = 1; s < n; s++)
+                            other_values[s] = 0;
+
+                        n = 1;
                     }
 
-                    if (n >= number_of_values)
+                    // The nth value is now possible. Increment n to ensure that the next value is also possible.
+                    else if (n + 1 < number_of_values)
+                    {
+                        n++;
+                    }
+
+                    else
+                    {
                         break;
+                    }
                 }
 
-                if (!first_value_is_possible)
+                if (n >= number_of_values)
+                    break;
+
+                // 3. Evaluate the expression given that possibility
+
+                // TODO: Allow this to accept multiple values
+                given_values[0].num = value;
+                for (size_t v = 1; v < number_of_values; v++)
+                    given_values[v].num = other_values[v];
+
+                Value result = evaluate_arc_expression(arc->expr, given_values);
+
+                // 4. if the result is true, we know the first value is possible
+                if (result.boolean == true)
                 {
-                    first_value_field -= (1ULL << value);
+                    first_value_is_possible = true;
+                    break;
                 }
+
+                // 5. Increment the other value(s)
+                n = 1;
+                other_values[n]++;
+
+                while (other_values[n] == 64)
+                {
+                    other_values[n] = 0;
+                    n++;
+                    if (n >= number_of_values)
+                        break;
+                    else
+                        other_values[n]++;
+                }
+
+                if (n >= number_of_values)
+                    break;
+            }
+
+            if (!first_value_is_possible)
+            {
+                first_value_field -= (1ULL << value);
             }
         }
 
@@ -206,7 +218,8 @@ void apply_arc_constraints(QuantumMap *quantum_map, Constraints constraints)
 // Solve
 void solve(QuantumMap *quantum_map, Constraints constraints)
 {
-    apply_arc_constraints(quantum_map, constraints);
+    enforce_single_arc_constrains(quantum_map, constraints);
+    enforce_multi_arc_constraints(quantum_map, constraints);
 
     for (size_t i = 0; i < quantum_map->values_count; i++)
     {
@@ -224,6 +237,6 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
             value = (value + 1) % 64;
         quantum_map->values[i] = 1ULL << value;
 
-        apply_arc_constraints(quantum_map, constraints);
+        enforce_multi_arc_constraints(quantum_map, constraints);
     }
 }
