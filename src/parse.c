@@ -172,6 +172,24 @@ Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
         expr->name = t.str;
     }
 
+    // Number
+    else if (peek(parser, NUMBER))
+    {
+        Token t = eat(parser, NUMBER);
+
+        // CLEANUP: Surely there's a better way of doing this?
+        size_t len = (t.str.len + 1);
+        char *temp = (char *)malloc(sizeof(char) * len);
+        strncpy(temp, t.str.str, t.str.len);
+        temp[len] = '\0';
+
+        expr = NEW(Expression);
+        expr->kind = NUMBER_LITERAL;
+        expr->number = atoi(temp);
+
+        free(temp);
+    }
+
     // Error if prefix not found
     if (expr == NULL)
     {

@@ -120,6 +120,12 @@ void print_expression(const Expression *expr)
         break;
     }
 
+    case NUMBER_LITERAL:
+    {
+        printf("%d", expr->number);
+        break;
+    }
+
     case VARIABLE:
     {
         printf("!%.*s", expr->var->name.len, expr->var->name.str);

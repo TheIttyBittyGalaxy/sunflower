@@ -52,6 +52,7 @@ typedef enum
 {
     UNRESOLVED_NAME,
     PROPERTY_NAME,
+    NUMBER_LITERAL,
     VARIABLE,
     BIN_OP,
 } ExpressionKind;
@@ -78,6 +79,10 @@ struct Expression
         struct // UNRESOLVED_NAME / PROPERTY_NAME
         {
             sub_string name;
+        };
+        struct // NUMBER_LITERAL
+        {
+            int number;
         };
         struct // VARIABLE
         {

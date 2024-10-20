@@ -11,6 +11,7 @@ typedef enum
     KEY_DEF,
     KEY_FOR,
     NAME,
+    NUMBER,
 
     COLON,
     DOT,

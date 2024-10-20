@@ -12,14 +12,14 @@ bool is_word(const char c)
            c == '_';
 }
 
-bool is_numeral(const char c)
+bool is_digit(const char c)
 {
     return (c >= '0' && c <= '9');
 }
 
-bool is_word_or_numeral(const char c)
+bool is_word_or_digit(const char c)
 {
-    return is_word(c) || is_numeral(c);
+    return is_word(c) || is_digit(c);
 }
 
 // Tokenise
@@ -93,10 +93,16 @@ TokenArray tokenise(const char *const src)
             c++;
             continue; // Skip this character without generating a token
         }
+        else if (is_digit(*c))
+        {
+            t.kind = NUMBER;
+            while (is_digit(*(++c)))
+                t.str.len++;
+        }
         else if (is_word(*c))
         {
             t.kind = NAME;
-            while (is_word_or_numeral(*(++c)))
+            while (is_word_or_digit(*(++c)))
                 t.str.len++;
 
             if (strncmp(t.str.str, "DEF", 3) == 0)

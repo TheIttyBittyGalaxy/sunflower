@@ -55,6 +55,8 @@ const char *token_kind_string(TokenKind kind)
         return "KEY_FOR";
     if (kind == NAME)
         return "NAME";
+    if (kind == NUMBER)
+        return "NUMBER";
 
     if (kind == COLON)
         return "COLON";
