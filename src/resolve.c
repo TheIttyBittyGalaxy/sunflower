@@ -47,7 +47,6 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
         {
             Variable *var = rule->variables + i;
             sub_string var_name = var->name;
-            printf(" %.*s  %.*s\n", name.len, name.str, var_name.len, var_name.str);
             if (name.len == var_name.len && strncmp(name.str, var_name.str, name.len) == 0)
             {
                 expr->kind = VARIABLE;
