@@ -15,20 +15,21 @@ DEF Person {
     father: Person?
 }
 
+// Constrain the properties on each person
 FOR Person x {
     x.mother.gender = FEMALE
     x.father.gender = MALE
+
+    // This rule says "everyone must have either both parents or no parents, never just one"
+    (x.mother == NULL) == (x.father == NULL)
 }
 
-COUNT Person[gender: FEMALE, mother: NULL, father: NULL] == 1
-COUNT Person[gender: MALE, mother: NULL, father: NULL] == 1
-
-COUNT Person[mother: NULL] == 2
-COUNT Person[father: NULL] == 2
+// The rule says "there may be no more than 6 people without parents"
+COUNT Person[mother: NULL, father: NULL] <= 6
 ```
 
 **console**
 
 ```
-> sunflower family_tree.sunflower Person:10
+> sunflower family_tree.sunflower Person:32
 ```
