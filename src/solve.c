@@ -59,11 +59,11 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
 }
 
 // Apply arc constraints
-void apply_arc_constraints(QuantumMap *quantum_map, ArcArray arcs)
+void apply_arc_constraints(QuantumMap *quantum_map, Constraints constraints)
 {
-    for (size_t arc_index = 0; arc_index < arcs.arcs_count; arc_index++)
+    for (size_t arc_index = 0; arc_index < constraints.arcs_count; arc_index++)
     {
-        Arc *arc = arcs.arcs + arc_index;
+        Arc *arc = constraints.arcs + arc_index;
 
         size_t number_of_values = arc->value_indexes_count;
         Value *given_values = (Value *)malloc(sizeof(Value) * number_of_values);
@@ -204,9 +204,9 @@ void apply_arc_constraints(QuantumMap *quantum_map, ArcArray arcs)
 }
 
 // Solve
-void solve(QuantumMap *quantum_map, ArcArray arcs)
+void solve(QuantumMap *quantum_map, Constraints constraints)
 {
-    apply_arc_constraints(quantum_map, arcs);
+    apply_arc_constraints(quantum_map, constraints);
 
     for (size_t i = 0; i < quantum_map->values_count; i++)
     {
@@ -224,6 +224,6 @@ void solve(QuantumMap *quantum_map, ArcArray arcs)
             value = (value + 1) % 64;
         quantum_map->values[i] = 1ULL << value;
 
-        apply_arc_constraints(quantum_map, arcs);
+        apply_arc_constraints(quantum_map, constraints);
     }
 }

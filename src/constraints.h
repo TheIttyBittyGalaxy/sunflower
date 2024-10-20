@@ -7,7 +7,7 @@
 #include "program.h"
 #include "quantum_map.h"
 
-// CLEANUP: Split data structure and `create_arcs` into separate source files.
+// CLEANUP: Split data structure and `create_constraints` into separate source files.
 
 // Arc
 typedef struct
@@ -17,18 +17,18 @@ typedef struct
     Expression *expr;
 } Arc;
 
-// ArcArray
+// Constraints
 typedef struct
 {
     Arc *arcs;
     size_t arcs_count;
-} ArcArray;
+} Constraints;
 
-// Create arcs
-ArcArray create_arcs(Program *program, QuantumMap *quantum_map);
+// Create constraints
+Constraints create_constraints(Program *program, QuantumMap *quantum_map);
 
 // Printing & strings
 void print_arc(Arc *arc);
-void print_arcs(ArcArray arcs);
+void print_constraints(Constraints constraints);
 
 #endif

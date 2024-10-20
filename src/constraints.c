@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "arc.h"
+#include "constraints.h"
 
 // ArcInformation
 // When we are converting a rule into multiple arc constraints, `convert_expression` will take a rule
-// and produce a single expression (to be used by the arc), as well as a `ArcInformation`. `create_arcs`
+// and produce a single expression (to be used by the arc), as well as a `ArcInformation`. `create_constraints`
 // can then use this to create an arc for every set of instances that the rule applies to.
 
 typedef struct
@@ -154,11 +154,11 @@ Expression *copy_arc_expr_with_rotation(Expression *original_expr, size_t rotati
     return expr;
 }
 
-// Create arcs
-ArcArray create_arcs(Program *program, QuantumMap *quantum_map)
+// Create constraints
+Constraints create_constraints(Program *program, QuantumMap *quantum_map)
 {
-    ArcArray array;
-    INIT_ARRAY(array.arcs);
+    Constraints constraints;
+    INIT_ARRAY(constraints.arcs);
 
     for (size_t i = 0; i < program->rules_count; i++)
     {
@@ -206,7 +206,7 @@ ArcArray create_arcs(Program *program, QuantumMap *quantum_map)
 
             for (size_t rotation = 0; rotation < arc_info.value_info_map_count; rotation++)
             {
-                Arc *arc = EXTEND_ARRAY(array.arcs, Arc);
+                Arc *arc = EXTEND_ARRAY(constraints.arcs, Arc);
                 arc->expr = arc_info.exprs + rotation;
                 arc->value_indexes_count = arc_info.value_info_map_count;
                 arc->value_indexes = (size_t *)malloc(sizeof(size_t) * arc->value_indexes_count);
@@ -220,7 +220,7 @@ ArcArray create_arcs(Program *program, QuantumMap *quantum_map)
         }
     }
 
-    return array;
+    return constraints;
 }
 
 // Printing & strings
@@ -233,8 +233,8 @@ void print_arc(Arc *arc)
     printf("\n");
 }
 
-void print_arcs(ArcArray arcs)
+void print_constraints(Constraints constraints)
 {
-    for (size_t i = 0; i < arcs.arcs_count; i++)
-        print_arc(arcs.arcs + i);
+    for (size_t i = 0; i < constraints.arcs_count; i++)
+        print_arc(constraints.arcs + i);
 }

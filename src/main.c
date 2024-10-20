@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "arc.h"
+#include "constraints.h"
 #include "collapse.h"
 #include "collapsed_map.h"
 #include "parse.h"
@@ -92,17 +92,17 @@ int main(int argc, char const *argv[])
     print_quantum_map(quantum_map);
     printf("\n");
 
-    // Create arcs
-    printf("Creating arcs\n");
-    ArcArray arcs = create_arcs(program, quantum_map);
+    // Create constraints
+    printf("Creating constraints\n");
+    Constraints constraints = create_constraints(program, quantum_map);
 
     printf("Result:\n");
-    print_arcs(arcs);
+    print_constraints(constraints);
     printf("\n");
 
     // Solve quantum-map
     printf("Solving quantum map\n");
-    solve(quantum_map, arcs);
+    solve(quantum_map, constraints);
 
     printf("Result:\n");
     print_quantum_map(quantum_map);

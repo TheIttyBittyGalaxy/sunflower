@@ -1,9 +1,9 @@
 #ifndef Solve_H
 #define Solve_H
 
-#include "arc.h"
+#include "constraints.h"
 #include "quantum_map.h"
 
-void solve(QuantumMap *quantum_map, ArcArray arcs);
+void solve(QuantumMap *quantum_map, Constraints constraints);
 
 #endif
