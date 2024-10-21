@@ -133,6 +133,7 @@ void parse_rule(Parser *parser)
     while (peek(parser, NAME))
     {
         Placeholder *placeholder = EXTEND_ARRAY(rule->placeholders, Placeholder);
+        placeholder->node_type = NULL;
 
         Token node_name = eat(parser, NAME);
         placeholder->node_name = node_name.str;

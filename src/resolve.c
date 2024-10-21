@@ -33,7 +33,27 @@ void resolve_node(Program *program, Node *node)
 void resolve_rule(Program *program, Rule *rule)
 {
     // TODO: Check that there are no duplicate placeholder names
-    // TODO: Resolve placeholders types
+
+    for (size_t i = 0; i < rule->placeholders_count; i++)
+    {
+        Placeholder *placeholder = rule->placeholders + i;
+
+        for (size_t n = 0; n < program->nodes_count; n++)
+        {
+            Node *node = program->nodes + n;
+            if (node->name.len == placeholder->node_name.len && (strncmp(node->name.str, placeholder->node_name.str, node->name.len) == 0))
+            {
+                placeholder->node_type = node;
+                break;
+            }
+        }
+
+        if (!placeholder->node_type)
+        {
+            fprintf(stderr, "Could not find node with name %.*s", placeholder->node_name.len, placeholder->node_name.str);
+            exit(EXIT_FAILURE);
+        }
+    }
 
     rule->expression = resolve_expression(program, rule, rule->expression);
 }

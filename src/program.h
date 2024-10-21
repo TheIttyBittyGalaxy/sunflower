@@ -29,6 +29,7 @@ struct Placeholder
 {
     sub_string name;
     sub_string node_name;
+    Node *node_type;
 };
 
 // Rule

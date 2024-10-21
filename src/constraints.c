@@ -177,33 +177,15 @@ Constraints create_constraints(Program *program, QuantumMap *quantum_map)
         // NOTE: The following code is designed for rules with exactly one placeholder.
         Placeholder *placeholder = rule->placeholders;
 
-        // CLEANUP: Ideally, this resolution should have happened at a previous stage
-        Node *placeholder_node_type = NULL;
-        for (size_t n = 0; n < program->nodes_count; n++)
-        {
-            Node *node = program->nodes + n;
-            if (node->name.len == placeholder->node_name.len && (strncmp(node->name.str, placeholder->node_name.str, node->name.len) == 0))
-            {
-                placeholder_node_type = node;
-                break;
-            }
-        }
-
-        if (!placeholder_node_type)
-        {
-            fprintf(stderr, "Could not find node with name %.*s", placeholder->node_name.len, placeholder->node_name.str);
-            exit(EXIT_FAILURE);
-        }
-
         // TODO: The expression that is returned by `convert` never has an "owning" reference
         //       created for it, meaning it's not clear how it would be freed? Once it is clearer
         //       how this should be done, fix this!
-        ArcInformation arc_info = convert(placeholder_node_type, rule->expression);
+        ArcInformation arc_info = convert(placeholder->node_type, rule->expression);
 
         for (size_t j = 0; j < quantum_map->instances_count; j++)
         {
             QuantumInstance *instance = quantum_map->instances + j;
-            if (instance->node != placeholder_node_type)
+            if (instance->node != placeholder->node_type)
                 continue;
 
             // Arcs that constrain a single variable
