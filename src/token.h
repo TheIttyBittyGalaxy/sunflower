@@ -15,6 +15,7 @@ typedef enum
 
     COLON,
     DOT,
+    EQUAL_SIGN,
     LINE,
 
     PAREN_L,
@@ -23,6 +24,8 @@ typedef enum
     CURLY_R,
     ARROW_L,
     ARROW_R,
+    ARROW_L_EQUAL,
+    ARROW_R_EQUAL,
 
     END_OF_FILE,
     INVALID_TOKEN

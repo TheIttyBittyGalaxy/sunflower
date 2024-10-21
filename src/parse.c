@@ -216,17 +216,17 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
     Operation infix_op;
     Token t = parser->tokens.values[parser->current_index];
 
-    if (strncmp(t.str.str, ".", 1) == 0)
+    if (t.kind == DOT)
         infix_op = INDEX;
-    else if (strncmp(t.str.str, "=", 1) == 0)
+    else if (t.kind == EQUAL_SIGN)
         infix_op = EQUAL_TO;
-    else if (strncmp(t.str.str, "<", 1) == 0)
+    else if (t.kind == ARROW_L)
         infix_op = LESS_THAN;
-    else if (strncmp(t.str.str, ">", 1) == 0)
+    else if (t.kind == ARROW_R)
         infix_op = MORE_THAN;
-    else if (strncmp(t.str.str, "<=", 2) == 0)
+    else if (t.kind == ARROW_L_EQUAL)
         infix_op = LESS_THAN_OR_EQUAL;
-    else if (strncmp(t.str.str, ">=", 2) == 0)
+    else if (t.kind == ARROW_R_EQUAL)
         infix_op = MORE_THAN_OR_EQUAL;
 
     else

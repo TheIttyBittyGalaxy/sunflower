@@ -62,6 +62,8 @@ const char *token_kind_string(TokenKind kind)
         return "COLON";
     if (kind == DOT)
         return "DOT";
+            if (kind == EQUAL_SIGN)
+        return "EQUAL_SIGN";
     if (kind == LINE)
         return "LINE";
 
@@ -77,6 +79,10 @@ const char *token_kind_string(TokenKind kind)
         return "ARROW_L";
     if (kind == ARROW_R)
         return "ARROW_R";
+    if (kind == ARROW_L_EQUAL)
+        return "ARROW_L_EQUAL";
+    if (kind == ARROW_R_EQUAL)
+        return "ARROW_R_EQUAL";
 
     if (kind == END_OF_FILE)
         return "END_OF_FILE";

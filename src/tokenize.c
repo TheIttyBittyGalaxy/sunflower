@@ -51,6 +51,11 @@ TokenArray tokenise(const char *const src)
             t.kind = DOT;
             c++;
         }
+        else if (*c == '=')
+        {
+            t.kind = EQUAL_SIGN;
+            c++;
+        }
         else if (*c == '(')
         {
             t.kind = PAREN_L;
@@ -75,11 +80,23 @@ TokenArray tokenise(const char *const src)
         {
             t.kind = ARROW_L;
             c++;
+            if (*c == '=')
+            {
+                t.kind = ARROW_L_EQUAL;
+                t.str.len++;
+                c++;
+            }
         }
         else if (*c == '>')
         {
             t.kind = ARROW_R;
             c++;
+            if (*c == '=')
+            {
+                t.kind = ARROW_R_EQUAL;
+                t.str.len++;
+                c++;
+            }
         }
         else if (*c == '\n')
         {
