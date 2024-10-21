@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 
 #include "resolve.h"
 
@@ -41,7 +40,7 @@ void resolve_rule(Program *program, Rule *rule)
         for (size_t n = 0; n < program->nodes_count; n++)
         {
             Node *node = program->nodes + n;
-            if (node->name.len == placeholder->node_name.len && (strncmp(node->name.str, placeholder->node_name.str, node->name.len) == 0))
+            if (substrings_match(node->name, placeholder->node_name))
             {
                 placeholder->node_type = node;
                 break;
@@ -67,7 +66,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
         {
             Placeholder *placeholder = rule->placeholders + i;
             sub_string var_name = placeholder->name;
-            if (name.len == var_name.len && strncmp(name.str, var_name.str, name.len) == 0)
+            if (substrings_match(name, var_name))
             {
                 expr->kind = PLACEHOLDER;
                 expr->placeholder = placeholder;

@@ -91,7 +91,7 @@ Expression *convert_expression(ArcInformation *arc_info, Node *node, Expression 
             for (size_t i = 0; i < node->properties_count; i++)
             {
                 sub_string other_name = (node->properties + i)->name;
-                if (prop_name.len == other_name.len && (strncmp(prop_name.str, other_name.str, prop_name.len) == 0))
+                if (substrings_match(prop_name, other_name))
                 {
                     expr->index = arc_value_index_for(arc_info, i);
                     break;

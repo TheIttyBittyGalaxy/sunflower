@@ -1,6 +1,7 @@
 #ifndef SUB_STRING_H
 #define SUB_STRING_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 typedef struct
@@ -9,7 +10,7 @@ typedef struct
     size_t len;
 } sub_string;
 
-// CLEANUP: Create are_substrings_equal(sub_string a, sub_string b)
+bool substrings_match(sub_string a, sub_string b);
 
 #define NULL_SUB_STRING ((sub_string){.str = NULL, .len = 0})
 
