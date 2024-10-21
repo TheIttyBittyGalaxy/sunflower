@@ -1,5 +1,5 @@
 #include "collapse.h"
-#include "program.h" // CLEANUP: This is only being used for access to the "NEW" macro
+#include "memory.h"
 
 CollapsedMap *collapse(QuantumMap *quantum_map)
 {

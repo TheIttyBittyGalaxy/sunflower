@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "program.h" // CLEANUP: This is only being used for access to the "NEW" macro
+#include "memory.h"
 #include "quantum_map.h"
 
 // Create quantum map

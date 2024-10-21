@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "constraints.h"
+#include "memory.h"
 
 // ArcInformation
 // When we are converting a rule into multiple arc constraints, `convert_expression` will take a rule

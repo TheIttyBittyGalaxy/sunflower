@@ -7,25 +7,6 @@
 #include "expression.h"
 #include "sub_string.h"
 
-// Macros
-
-// CLEANUP: Move these marcos to their own source file
-
-#define NEW(type) (type *)malloc(sizeof(type));
-
-#define INIT_ARRAY(array) \
-    array = NULL;         \
-    array##_count = 0;
-
-#define EXTEND_ARRAY(array, type)                                         \
-    ({                                                                    \
-        if (array##_count++ == 0)                                         \
-            array = (type *)malloc(sizeof(type));                         \
-        else                                                              \
-            array = (type *)realloc(array, sizeof(type) * array##_count); \
-        (array + array##_count - 1);                                      \
-    })
-
 // Property
 typedef struct
 {
