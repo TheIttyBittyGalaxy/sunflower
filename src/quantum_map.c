@@ -38,11 +38,17 @@ QuantumMap *create_quantum_map(Program *program)
     return quantum_map;
 }
 
+// Bitfields
+bool value_in_bitfield(int value, uint64_t bitfield)
+{
+    return (bitfield & (1ULL << value)) > 0;
+}
+
 // Printing & strings
 void print_bitfield(uint64_t bitfield)
 {
     for (int i = 63; i >= 0; i--)
-        putchar((bitfield & (1ULL << i)) ? '1' : '0');
+        putchar(value_in_bitfield(i, bitfield) ? '1' : '0');
 }
 
 void print_quantum_map(QuantumMap *quantum_map)

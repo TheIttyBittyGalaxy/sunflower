@@ -20,10 +20,10 @@ CollapsedMap *collapse(QuantumMap *quantum_map)
 
         for (size_t p = 0; p < node->properties_count; p++)
         {
-            uint64_t value_map = quantum_map->variables[quantum_instance->variables_array_index + p];
+            uint64_t var_bitfield = quantum_map->variables[quantum_instance->variables_array_index + p];
 
             uint_least8_t value = 0;
-            while (!(value_map & (1ULL << value)))
+            while (!value_in_bitfield(value, var_bitfield))
                 value++;
 
             collapsed_instance->variables[p] = value;

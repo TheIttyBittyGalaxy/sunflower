@@ -28,6 +28,9 @@ typedef struct
 // Create quantum map
 QuantumMap *create_quantum_map(Program *program);
 
+// Bitfields
+bool value_in_bitfield(int value, uint64_t bitfield);
+
 // Printing & strings
 void print_bitfield(uint64_t bitfield);
 void print_quantum_map(QuantumMap *quantum_map);

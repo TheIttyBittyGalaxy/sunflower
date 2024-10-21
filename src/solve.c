@@ -74,7 +74,7 @@ void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constrai
         for (int value = 0; value < 64; value++)
         {
             uint64_t value_bitfield = (1ULL << value);
-            if ((var_bitfield & value_bitfield) == 0)
+            if (!(var_bitfield & value_bitfield))
                 continue;
 
             given_value.num = value; // TODO: This is temporary. Eventually not all variables will be numbers.
@@ -88,21 +88,18 @@ void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constrai
     }
 }
 
-// CLEANUP: This code is confusing! Most of the complexity arises from trying to iterate the
-//          other values. With some care, I imagine this could be implemented in a better way.
-
 // TODO: Support for more than a fixed number of variables.
 #define MAX_VARIABLES 16
 
 void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constraints)
 {
     // Array to store bitfield for each variable constrained by an arc
-    uint64_t var_bitfields[MAX_VARIABLES];
-#define primary_bitfield (var_bitfields[0]) // Access the first element of `var_bitfields` as `primary_bitfield`
+    uint64_t var_bitfield[MAX_VARIABLES];
+#define primary_bitfield (var_bitfield[0]) // Access the first element of `var_bitfields` as `primary_bitfield`
 
     // Initialise array of possible values for each variable
-    int var_values[MAX_VARIABLES];
-#define primary_value (var_values[0]) // Access the first element of `var_values` as `primary_value`
+    int var_value[MAX_VARIABLES];
+#define primary_value (var_value[0]) // Access the first element of `var_values` as `primary_value`
 
     // Initialise array of expression values
     Value expression_values[MAX_VARIABLES];
@@ -112,7 +109,6 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
     // Enforce each arc
     for (size_t arc_index = 0; arc_index < constraints.multi_arcs_count; arc_index++)
     {
-#define DEBUG(x) printf("> %d\n", x);
 
         Arc *arc = constraints.multi_arcs + arc_index;
         size_t primary_index = arc->variable_indexes[0];
@@ -129,75 +125,62 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
         for (size_t i = 0; i < total_variables; i++)
         {
             size_t var_index = arc->variable_indexes[i];
-            var_bitfields[i] = quantum_map->variables[var_index];
+            var_bitfield[i] = quantum_map->variables[var_index];
         }
 
         // Test each potential value for the first variable to see if it should be eliminated
         for (primary_value = 0; primary_value < 64; primary_value++)
         {
             // Skip this value if it is already not a possibility
-            if ((primary_bitfield & (1ULL << primary_value)) == 0)
+            if (!value_in_bitfield(primary_value, primary_bitfield))
                 continue;
 
             // Reset the value of each variable to 0. These will be incremented as we test different combinations of possible values.
             for (size_t n = 1; n < MAX_VARIABLES; n++)
-                var_values[n] = 0;
+                var_value[n] = 0;
 
             // Determine if this value is a valid possibility
             bool primary_value_is_valid_possibility = false;
             while (true)
             {
-                // Increment the value of each variable (excluding the first) until we encounter a set of variable values that are all possible
-                size_t var_index = 1;
-                while (var_index < total_variables)
+                // For as long as the set of non-primary variable values is not possible, increment the set.
                 {
-                    // While the nth value is not a possibility, increment it.
-                    while ((var_bitfields[var_index] & (1ULL << var_values[var_index])) == 0)
+                    bool end_of_possible_values = false;
+                    size_t n = 1;
+                    while (n < total_variables)
                     {
-                        var_values[var_index]++;
-                        if (var_values[var_index] == 64)
-                            break;
-                    }
-
-                    // If we've iterated through all possibilities for the nth value
-                    if (var_values[var_index] == 64)
-                    {
-                        while (var_values[var_index] == 64)
+                        if (value_in_bitfield(var_value[n], var_bitfield[n]))
                         {
-                            var_index++;
-                            if (var_index >= total_variables)
-                                break;
-                            else
-                                var_values[var_index]++;
+                            n++;
+                            continue;
                         }
 
-                        if (var_index >= total_variables)
-                            break;
+                        var_value[n]++;
 
-                        for (size_t s = 1; s < var_index; s++)
-                            var_values[s] = 0;
+                        if (var_value[n] == 64)
+                        {
+                            n++;
 
-                        var_index = 1;
+                            if (n >= total_variables)
+                            {
+                                end_of_possible_values = true;
+                                break;
+                            }
+
+                            var_value[n]++;
+                            for (size_t v = 1; v < n; v++)
+                                var_value[v] = 0;
+                            n = 1;
+                        }
                     }
 
-                    // The nth value is now possible. Increment n to ensure that the next value is also possible.
-                    else if (var_index + 1 < total_variables)
-                    {
-                        var_index++;
-                    }
-
-                    else
-                    {
+                    if (end_of_possible_values)
                         break;
-                    }
                 }
 
-                if (var_index >= total_variables)
-                    break;
-
                 // Evaluate the set of possible variables to determine if the primary value is a valid possibility
-                for (size_t n = 0; n < total_variables; n++)
-                    expression_values[n].num = var_values[n]; // TODO: This is temporary. Eventually not all variables will be numbers.
+                for (size_t v = 0; v < total_variables; v++)
+                    expression_values[v].num = var_value[v]; // TODO: This is temporary. Eventually not all variables will be numbers.
                 bool result = evaluate_arc_expression(arc->expr, expression_values).boolean;
 
                 if (result)
@@ -207,21 +190,22 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
                 }
 
                 // Increment the set of variable values (excluding the primary variable)
-                var_index = 1;
-                var_values[var_index]++;
-
-                while (var_values[var_index] == 64)
                 {
-                    var_values[var_index] = 0;
-                    var_index++;
-                    if (var_index >= total_variables)
-                        break;
-                    else
-                        var_values[var_index]++;
-                }
+                    size_t n = 1;
+                    while (n < total_variables)
+                    {
+                        var_value[n]++;
 
-                if (var_index >= total_variables)
-                    break;
+                        if (var_value[n] < 64)
+                            break;
+
+                        var_value[n] = 0;
+                        n++;
+                    }
+
+                    if (n >= total_variables)
+                        break;
+                }
             }
 
             if (!primary_value_is_valid_possibility)
@@ -251,8 +235,9 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
         }
 
         // Reduce variable to a single possibility
+        // FIXME: This method of selecting a random value will lead to bias.
         size_t value = rand() % 64;
-        while ((var_bitfield & (1ULL << value)) == 0)
+        while (!value_in_bitfield(value, var_bitfield))
             value = (value + 1) % 64;
         quantum_map->variables[i] = 1ULL << value;
 
