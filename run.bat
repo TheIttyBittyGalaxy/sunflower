@@ -1,1 +1,1 @@
-main examples/basic.sun 
+chcp 65001 && main examples/basic.sun 
