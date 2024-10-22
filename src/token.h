@@ -16,6 +16,8 @@ typedef enum
     COLON,
     DOT,
     EQUAL_SIGN,
+    EXCLAIM,
+    EXCLAIM_EQUAL,
     LINE,
 
     PAREN_L,

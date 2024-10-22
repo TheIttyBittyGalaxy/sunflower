@@ -31,6 +31,7 @@ typedef enum
     MORE_THAN_OR_EQUAL,
 
     EQUAL_TO,
+    NOT_EQUAL_TO,
 } Operation;
 
 // ValueKind

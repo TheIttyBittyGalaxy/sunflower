@@ -27,6 +27,9 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
         if (expr->op == EQUAL_TO)
             result = lhs.kind == rhs.kind && lhs.num == rhs.num; // FIXME: Using `num` regardless of the kind is probably error prone?
 
+        else if (expr->op == NOT_EQUAL_TO)
+            result = lhs.kind != rhs.kind || lhs.num != rhs.num; // FIXME: Using `num` regardless of the kind is probably error prone?
+
         else if (expr->op == LESS_THAN)
             result = lhs.num < rhs.num;
 

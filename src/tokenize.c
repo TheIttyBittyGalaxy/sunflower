@@ -56,6 +56,17 @@ TokenArray tokenise(const char *const src)
             t.kind = EQUAL_SIGN;
             c++;
         }
+        else if (*c == '!')
+        {
+            t.kind = EXCLAIM;
+            c++;
+            if (*c == '=')
+            {
+                t.kind = EXCLAIM_EQUAL;
+                t.str.len++;
+                c++;
+            }
+        }
         else if (*c == '(')
         {
             t.kind = PAREN_L;

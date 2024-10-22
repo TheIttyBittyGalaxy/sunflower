@@ -221,6 +221,8 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
         infix_op = INDEX;
     else if (t.kind == EQUAL_SIGN)
         infix_op = EQUAL_TO;
+    else if (t.kind == EXCLAIM_EQUAL)
+        infix_op = NOT_EQUAL_TO;
     else if (t.kind == ARROW_L)
         infix_op = LESS_THAN;
     else if (t.kind == ARROW_R)

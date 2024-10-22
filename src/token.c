@@ -62,8 +62,12 @@ const char *token_kind_string(TokenKind kind)
         return "COLON";
     if (kind == DOT)
         return "DOT";
-            if (kind == EQUAL_SIGN)
+    if (kind == EQUAL_SIGN)
         return "EQUAL_SIGN";
+    if (kind == EXCLAIM)
+        return "EXCLAIM";
+    if (kind == EXCLAIM_EQUAL)
+        return "EXCLAIM_EQUAL";
     if (kind == LINE)
         return "LINE";
 

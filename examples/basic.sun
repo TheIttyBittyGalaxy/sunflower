@@ -3,4 +3,4 @@ DEF Thing {
 }
 
 FOR Thing x: x.id < 5
-FOR Thing x Thing y: x.id = y.id
+FOR Thing x Thing y: x.id != y.id
