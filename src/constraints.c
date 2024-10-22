@@ -11,6 +11,7 @@
 
 typedef struct
 {
+    sub_string placeholder_name; // CLEANUP: If we're able to just store a pointer to the placeholder instead, this would probably be faster?
     size_t property_offset;
 } VariableInfo; // CLEANUP: Is there a better name for this?
 
@@ -24,22 +25,25 @@ typedef struct
     };
 } ConversionResult; // CLEANUP: Is there a better name for this?
 
-size_t get_variable_index_for(ConversionResult *result, size_t property_offset)
+size_t get_variable_index_for(ConversionResult *result, sub_string placeholder_name, size_t property_offset)
 {
     for (size_t i = 0; i < result->var_info_count; i++)
     {
         VariableInfo info = result->var_info[i];
-        if (info.property_offset == property_offset)
+        if (
+            substrings_match(info.placeholder_name, placeholder_name) &&
+            info.property_offset == property_offset)
             return i;
     }
 
     VariableInfo *info = EXTEND_ARRAY(result->var_info, VariableInfo);
+    info->placeholder_name = placeholder_name;
     info->property_offset = property_offset;
     return result->var_info_count - 1;
 }
 
 // Convert a rule's expression into an arc expression
-Expression *convert_expression(ConversionResult *result, Node *node, Expression *program_expression)
+Expression *convert_expression(ConversionResult *result, Rule *rule, Expression *program_expression)
 {
     Expression *expr = NEW(Expression);
 
@@ -58,20 +62,22 @@ Expression *convert_expression(ConversionResult *result, Node *node, Expression 
             //       This will need to change to generalise to most expressions.
             if (program_expression->lhs->kind != PLACEHOLDER || program_expression->rhs->kind != PROPERTY_NAME)
             {
-                fprintf(stderr, "Internal error, could not resolve index expression");
+                fprintf(stderr, "Internal error: Could not convert index expression into arc expression");
                 print_expression(program_expression);
                 exit(EXIT_FAILURE);
             }
 
+            // TODO: Could this potentially be handled during 'resolve' instead?
             expr->kind = ARC_VALUE;
-
-            sub_string prop_name = program_expression->rhs->name;
+            Placeholder *placeholder = program_expression->lhs->placeholder;
+            Node *node = placeholder->node_type;
+            sub_string field_name = program_expression->rhs->name;
             for (size_t i = 0; i < node->properties_count; i++)
             {
-                sub_string other_name = (node->properties + i)->name;
-                if (substrings_match(prop_name, other_name))
+                sub_string property_name = (node->properties + i)->name;
+                if (substrings_match(field_name, property_name))
                 {
-                    expr->index = get_variable_index_for(result, i);
+                    expr->index = get_variable_index_for(result, placeholder->name, i);
                     break;
                 }
             }
@@ -80,8 +86,8 @@ Expression *convert_expression(ConversionResult *result, Node *node, Expression 
         {
             expr->kind = BIN_OP;
             expr->op = program_expression->op;
-            expr->lhs = convert_expression(result, node, program_expression->lhs);
-            expr->rhs = convert_expression(result, node, program_expression->rhs);
+            expr->lhs = convert_expression(result, rule, program_expression->lhs);
+            expr->rhs = convert_expression(result, rule, program_expression->rhs);
         }
 
         break;
@@ -137,6 +143,28 @@ Expression *rotate_arc_expression(Expression *original_expr, size_t rotation, si
 // Create constraints
 void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *quantum_map)
 {
+    ConversionResult result;
+    INIT_ARRAY(result.var_info);
+
+    // FIXME: The expression that is returned by `convert_expression` never has an "owning"
+    //        reference created for it, meaning it's not clear how it would be freed? Once
+    //        it is clearer how this should be done, fix this!
+    Expression *arc_expression = convert_expression(&result, rule, rule->expression);
+
+    for (size_t i = 0; i < result.var_info_count; i++)
+    {
+        VariableInfo info = result.var_info[i];
+        printf("%d: %.*s %d\n", i, info.placeholder_name.len, info.placeholder_name.str, info.property_offset);
+    }
+    printf("\n");
+
+    if (result.var_count == 0)
+    {
+        fprintf(stderr, "Internal error: Somehow created an arc that constraints no values");
+        exit(EXIT_FAILURE);
+    }
+
+    // NOTE: The following code is designed for rules with exactly one placeholder.
     // TODO: Create arcs for rules with multiple placeholders
     if (rule->placeholders_count != 1)
     {
@@ -145,22 +173,7 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
         return;
     }
 
-    // NOTE: The following code is designed for rules with exactly one placeholder.
     Placeholder *placeholder = rule->placeholders;
-
-    ConversionResult result;
-    INIT_ARRAY(result.var_info);
-
-    // FIXME: The expression that is returned by `convert_expression` never has an "owning"
-    //        reference created for it, meaning it's not clear how it would be freed? Once
-    //        it is clearer how this should be done, fix this!
-    Expression *arc_expression = convert_expression(&result, placeholder->node_type, rule->expression);
-
-    if (result.var_count == 0)
-    {
-        fprintf(stderr, "Internal error: Somehow created an arc that constraints no values");
-        exit(EXIT_FAILURE);
-    }
 
     // Arcs that constrain a single variable
     if (result.var_count == 1)

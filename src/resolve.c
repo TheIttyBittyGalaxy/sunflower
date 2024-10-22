@@ -36,7 +36,6 @@ void resolve_rule(Program *program, Rule *rule)
     for (size_t i = 0; i < rule->placeholders_count; i++)
     {
         Placeholder *placeholder = rule->placeholders + i;
-
         for (size_t n = 0; n < program->nodes_count; n++)
         {
             Node *node = program->nodes + n;
@@ -61,12 +60,11 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
 {
     if (expr->kind == UNRESOLVED_NAME)
     {
-        sub_string name = expr->name;
+        sub_string unresolved_name = expr->name;
         for (size_t i = 0; i < rule->placeholders_count; i++)
         {
             Placeholder *placeholder = rule->placeholders + i;
-            sub_string var_name = placeholder->name;
-            if (substrings_match(name, var_name))
+            if (substrings_match(unresolved_name, placeholder->name))
             {
                 expr->kind = PLACEHOLDER;
                 expr->placeholder = placeholder;
@@ -75,7 +73,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
         }
 
         // TODO: Report line number and column
-        fprintf(stderr, "Error. Placeholder %.*s does not exist\n", name.len, name.str);
+        fprintf(stderr, "Error. Placeholder %.*s does not exist\n", unresolved_name.len, unresolved_name.str);
         exit(EXIT_FAILURE);
     }
 

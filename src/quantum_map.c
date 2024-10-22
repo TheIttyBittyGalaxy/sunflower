@@ -7,7 +7,7 @@
 
 // TODO: Instead of having a fixed "INSTANCES_PER_NODE_DEC", have the number of
 //       instances of each node type be passed as an argument into the function
-const size_t INSTANCES_PER_NODE_DEC = 1;
+const size_t INSTANCES_PER_NODE_DEC = 5;
 QuantumMap *create_quantum_map(Program *program)
 {
     QuantumMap *quantum_map = NEW(QuantumMap);
