@@ -277,8 +277,6 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
                 break;
         }
 
-        printf("%d %d\n", instance_index[0], instance_index[1]);
-
         // Create an arc for each constrained variable
         for (size_t rotation = 0; rotation < result.var_count; rotation++)
         {

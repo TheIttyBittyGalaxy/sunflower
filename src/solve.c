@@ -243,6 +243,8 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
 
     for (size_t i = 0; i < quantum_map->variables_count; i++)
     {
+        printf("\r%d / %d", i, quantum_map->variables_count);
+
         uint64_t var_bitfield = quantum_map->variables[i];
         if (var_bitfield == 0)
         {
@@ -260,4 +262,5 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
 
         enforce_multi_arc_constraints(quantum_map, constraints);
     }
+    printf("\r");
 }
