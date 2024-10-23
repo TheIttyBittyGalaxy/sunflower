@@ -24,23 +24,30 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
 
         bool result = false;
 
+        if (expr->op == LESS_THAN)
+            result = lhs.num < rhs.num;
+        else if (expr->op == MORE_THAN)
+            result = lhs.num > rhs.num;
+        else if (expr->op == LESS_THAN_OR_EQUAL)
+            result = lhs.num <= rhs.num;
+        else if (expr->op == MORE_THAN_OR_EQUAL)
+            result = lhs.num <= rhs.num;
+
         if (expr->op == EQUAL_TO)
             result = lhs.kind == rhs.kind && lhs.num == rhs.num; // FIXME: Using `num` regardless of the kind is probably error prone?
-
         else if (expr->op == NOT_EQUAL_TO)
             result = lhs.kind != rhs.kind || lhs.num != rhs.num; // FIXME: Using `num` regardless of the kind is probably error prone?
 
-        else if (expr->op == LESS_THAN)
-            result = lhs.num < rhs.num;
+        else if (expr->op == LOGICAL_AND)
+            result = lhs.boolean && rhs.boolean;
+        else if (expr->op == LOGICAL_OR)
+            result = lhs.boolean || rhs.boolean;
 
-        else if (expr->op == MORE_THAN)
-            result = lhs.num > rhs.num;
-
-        else if (expr->op == LESS_THAN_OR_EQUAL)
-            result = lhs.num <= rhs.num;
-
-        else if (expr->op == MORE_THAN_OR_EQUAL)
-            result = lhs.num <= rhs.num;
+        else
+        {
+            fprintf(stderr, "Unable to evaluate %s binary operation", operation_string(expr->op));
+            exit(EXIT_FAILURE);
+        }
 
         return (Value){
             .kind = BOOL_VAL,

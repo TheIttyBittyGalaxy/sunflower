@@ -10,6 +10,8 @@ typedef enum
 {
     KEY_DEF,
     KEY_FOR,
+    KEY_AND,
+    KEY_OR,
     NAME,
     NUMBER,
 

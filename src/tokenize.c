@@ -137,6 +137,10 @@ TokenArray tokenise(const char *const src)
                 t.kind = KEY_DEF;
             else if (strncmp(t.str.str, "FOR", 3) == 0)
                 t.kind = KEY_FOR;
+            else if (strncmp(t.str.str, "AND", 3) == 0)
+                t.kind = KEY_AND;
+            if (strncmp(t.str.str, "OR", 2) == 0)
+                t.kind = KEY_OR;
         }
         else
         {

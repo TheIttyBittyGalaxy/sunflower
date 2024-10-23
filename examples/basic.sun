@@ -1,6 +1,8 @@
 DEF Thing {
     id: num
+    chain: num
 }
 
 FOR Thing x: x.id < 5
 FOR Thing x Thing y: x.id != y.id
+FOR Thing x Thing y: x.chain > y.chain OR x.id < y.id

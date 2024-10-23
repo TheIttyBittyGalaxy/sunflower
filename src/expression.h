@@ -32,6 +32,9 @@ typedef enum
 
     EQUAL_TO,
     NOT_EQUAL_TO,
+
+    LOGICAL_AND,
+    LOGICAL_OR,
 } Operation;
 
 // ValueKind

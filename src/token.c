@@ -53,6 +53,10 @@ const char *token_kind_string(TokenKind kind)
         return "KEY_DEF";
     if (kind == KEY_FOR)
         return "KEY_FOR";
+    if (kind == KEY_AND)
+        return "KEY_AND";
+    if (kind == KEY_OR)
+        return "KEY_OR";
     if (kind == NAME)
         return "NAME";
     if (kind == NUMBER)

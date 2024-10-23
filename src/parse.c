@@ -219,10 +219,7 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
 
     if (t.kind == DOT)
         infix_op = INDEX;
-    else if (t.kind == EQUAL_SIGN)
-        infix_op = EQUAL_TO;
-    else if (t.kind == EXCLAIM_EQUAL)
-        infix_op = NOT_EQUAL_TO;
+
     else if (t.kind == ARROW_L)
         infix_op = LESS_THAN;
     else if (t.kind == ARROW_R)
@@ -231,6 +228,16 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
         infix_op = LESS_THAN_OR_EQUAL;
     else if (t.kind == ARROW_R_EQUAL)
         infix_op = MORE_THAN_OR_EQUAL;
+
+    else if (t.kind == EQUAL_SIGN)
+        infix_op = EQUAL_TO;
+    else if (t.kind == EXCLAIM_EQUAL)
+        infix_op = NOT_EQUAL_TO;
+
+    else if (t.kind == KEY_AND)
+        infix_op = LOGICAL_AND;
+    else if (t.kind == KEY_OR)
+        infix_op = LOGICAL_OR;
 
     else
         return lhs;

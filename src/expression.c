@@ -12,18 +12,19 @@ size_t precedence_of(Operation op)
         return 1;
 
     case LESS_THAN:
-        return 2;
     case MORE_THAN:
-        return 2;
     case LESS_THAN_OR_EQUAL:
-        return 2;
     case MORE_THAN_OR_EQUAL:
         return 2;
 
     case EQUAL_TO:
-        return 3;
     case NOT_EQUAL_TO:
         return 3;
+
+    case LOGICAL_AND:
+    case LOGICAL_OR:
+        return 4;
+
     default:
     {
         fprintf(stderr, "Internal error: Could not determine precedence of %s operation", operation_string(op));
@@ -69,6 +70,11 @@ const char *operation_string(Operation operation)
     if (operation == NOT_EQUAL_TO)
         return "NOT_EQUAL_TO";
 
+    if (operation = LOGICAL_AND)
+        return "LOGICAL_AND";
+    if (operation = LOGICAL_OR)
+        return "LOGICAL_OR";
+
     return "INVALID_OPERATION";
 }
 
@@ -112,7 +118,7 @@ void print_expression(const Expression *expr)
 
     case BIN_OP:
     {
-        const char *op = (const char *[]){".", "<", ">", "≤", "≥", "=", "≠"}[expr->op];
+        const char *op = (const char *[]){".", "<", ">", "≤", "≥", "=", "≠", "AND", "OR"}[expr->op];
         if (precedence_of(expr->op) == 1)
         {
             print_expression(expr->lhs);
