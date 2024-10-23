@@ -166,6 +166,15 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
                     size_t n = 1;
                     while (n < total_variables)
                     {
+                        // NOTE: This loop is written in such a way that if var_bitfield[1] is 0, the loop will run indefinitely!
+                        //       This is a quick and easy way to stop that from happening, and just quit the function quickly
+                        //       so that `solve` can report an error.
+                        if (var_bitfield[n] == 0)
+                        {
+                            end_of_possible_values = true;
+                            return;
+                        }
+
                         if (value_in_bitfield(var_value[n], var_bitfield[n]))
                         {
                             n++;
@@ -249,7 +258,7 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
         if (var_bitfield == 0)
         {
             // TODO: Handle this situation
-            fprintf(stderr, "During solving, we reached a state where a variable  was reduced to zero possibilities.");
+            fprintf(stderr, "\rDuring solving, we reached a state where a variable was reduced to zero possibilities.");
             exit(EXIT_FAILURE);
         }
 
