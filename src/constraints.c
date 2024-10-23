@@ -11,7 +11,7 @@
 
 typedef struct
 {
-    sub_string placeholder_name; // CLEANUP: If we're able to just store a pointer to the placeholder instead, this would probably be faster?
+    size_t placeholder_index;
     size_t property_offset;
 } VariableInfo; // CLEANUP: Is there a better name for this?
 
@@ -25,19 +25,19 @@ typedef struct
     };
 } ConversionResult; // CLEANUP: Is there a better name for this?
 
-size_t get_variable_index_for(ConversionResult *result, sub_string placeholder_name, size_t property_offset)
+size_t get_variable_index_for(ConversionResult *result, size_t placeholder_index, size_t property_offset)
 {
     for (size_t i = 0; i < result->var_info_count; i++)
     {
         VariableInfo info = result->var_info[i];
         if (
-            substrings_match(info.placeholder_name, placeholder_name) &&
+            info.placeholder_index == placeholder_index &&
             info.property_offset == property_offset)
             return i;
     }
 
     VariableInfo *info = EXTEND_ARRAY(result->var_info, VariableInfo);
-    info->placeholder_name = placeholder_name;
+    info->placeholder_index = placeholder_index;
     info->property_offset = property_offset;
     return result->var_info_count - 1;
 }
@@ -67,17 +67,30 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
                 exit(EXIT_FAILURE);
             }
 
-            // TODO: Could this potentially be handled during 'resolve' instead?
+            // CLEANUP: This could be handled better handled during 'resolve' instead.
+            // CLEANUP: Having to determine the index of placeholder like this shouldn't really be required.
+            //          Make adjustments upstream so that we never need to do this!
             expr->kind = ARC_VALUE;
             Placeholder *placeholder = program_expression->lhs->placeholder;
             Node *node = placeholder->node_type;
+
+            size_t placeholder_index = -1;
+            for (size_t i = 0; i < rule->placeholders_count; i++)
+            {
+                if (placeholder == (rule->placeholders + i))
+                {
+                    placeholder_index = i;
+                    break;
+                }
+            }
+
             sub_string field_name = program_expression->rhs->name;
             for (size_t i = 0; i < node->properties_count; i++)
             {
                 sub_string property_name = (node->properties + i)->name;
                 if (substrings_match(field_name, property_name))
                 {
-                    expr->index = get_variable_index_for(result, placeholder->name, i);
+                    expr->index = get_variable_index_for(result, placeholder_index, i);
                     break;
                 }
             }
@@ -154,7 +167,7 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
     for (size_t i = 0; i < result.var_info_count; i++)
     {
         VariableInfo info = result.var_info[i];
-        printf("%d: %.*s %d\n", i, info.placeholder_name.len, info.placeholder_name.str, info.property_offset);
+        printf("%d: [%d].%d\n", i, info.placeholder_index, info.property_offset);
     }
     printf("\n");
 
@@ -164,20 +177,11 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
         exit(EXIT_FAILURE);
     }
 
-    // NOTE: The following code is designed for rules with exactly one placeholder.
-    // TODO: Create arcs for rules with multiple placeholders
-    if (rule->placeholders_count != 1)
-    {
-        printf("Rules with multiple placeholders (or no placeholders?) not yet supported:\n");
-        print_rule(rule);
-        return;
-    }
-
-    Placeholder *placeholder = rule->placeholders;
-
-    // Arcs that constrain a single variable
+    // Arcs that constrain a single variable (and thus have one placeholder)
     if (result.var_count == 1)
     {
+        Placeholder *placeholder = rule->placeholders;
+
         for (size_t i = 0; i < quantum_map->instances_count; i++)
         {
             QuantumInstance *instance = quantum_map->instances + i;
@@ -194,20 +198,68 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
         return;
     }
 
-    // Arcs that constrain a multiple variables
+    // Arcs that constrain a multiple variables (and thus may have multiple placeholders)
     Expression *arc_expressions = (Expression *)malloc(sizeof(Expression) * result.var_count);
 
     // FIXME: This almost certainly causes memory leaks?
+    // CLEANUP: Rather than storing rotated expressions in memory, we should
+    //          just rotate the ARC_VALUE expression nodes in real time
     arc_expressions[0] = *arc_expression;
     for (size_t rotation = 1; rotation < result.var_count; rotation++)
         arc_expressions[rotation] = *rotate_arc_expression(arc_expression, rotation, result.var_count);
 
-    for (size_t i = 0; i < quantum_map->instances_count; i++)
-    {
-        QuantumInstance *instance = quantum_map->instances + i;
-        if (instance->node != placeholder->node_type)
-            continue;
+    size_t total_placeholders = rule->placeholders_count;
+    size_t *instance_index = (size_t *)malloc(sizeof(size_t) * total_placeholders);
 
+    for (size_t i = 0; i < total_placeholders; i++)
+        instance_index[i] = 0;
+
+    while (true)
+    {
+        // Skip combinations of instances until we find a combination that patch the placeholders of the rule
+        {
+            bool complete = false;
+            size_t n = 0;
+            while (n < total_placeholders)
+            {
+                QuantumInstance *instance = quantum_map->instances + instance_index[n];
+                printf("n: %d, instance_index[n]: %d, instance->node: %d, rule->placeholders[n].node_type: %d, match: %s\n",
+                       n,
+                       instance_index[n],
+                       instance->node,
+                       rule->placeholders[n].node_type,
+                       instance->node == rule->placeholders[n].node_type ? "true" : "false");
+
+                if (instance->node == rule->placeholders[n].node_type)
+                {
+                    n++;
+                    continue;
+                }
+
+                instance_index[n]++;
+
+                if (instance_index[n] == quantum_map->instances_count)
+                {
+                    n++;
+
+                    if (n >= total_placeholders)
+                    {
+                        complete = true;
+                        break;
+                    }
+
+                    instance_index[n]++;
+                    for (size_t v = 1; v < n; v++)
+                        instance_index[v] = 0;
+                    n = 1;
+                }
+            }
+
+            if (complete)
+                break;
+        }
+
+        // Create an arc for each constrained variable
         for (size_t rotation = 0; rotation < result.var_count; rotation++)
         {
             Arc *arc = EXTEND_ARRAY(constraints->multi_arcs, Arc);
@@ -217,8 +269,28 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
             for (size_t v = 0; v < result.var_count; v++)
             {
                 size_t n = (v + rotation) % result.var_count;
-                arc->variable_indexes[n] = instance->variables_array_index + result.var_info[v].property_offset;
+                VariableInfo info = result.var_info[v];
+                QuantumInstance *instance = quantum_map->instances + instance_index[info.placeholder_index];
+                arc->variable_indexes[n] = instance->variables_array_index + info.property_offset;
             }
+        }
+
+        // Increment to a new combination of instances
+        {
+            size_t n = 0;
+            while (n < total_placeholders)
+            {
+                instance_index[n]++;
+
+                if (instance_index[n] < quantum_map->instances_count)
+                    break;
+
+                instance_index[n] = 0;
+                n++;
+            }
+
+            if (n >= total_placeholders)
+                break;
         }
     }
 }
