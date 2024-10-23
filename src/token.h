@@ -20,6 +20,10 @@ typedef enum
     EQUAL_SIGN,
     EXCLAIM,
     EXCLAIM_EQUAL,
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
     LINE,
 
     PAREN_L,

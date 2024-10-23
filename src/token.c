@@ -72,6 +72,14 @@ const char *token_kind_string(TokenKind kind)
         return "EXCLAIM";
     if (kind == EXCLAIM_EQUAL)
         return "EXCLAIM_EQUAL";
+    if (kind == PLUS)
+        return "PLUS";
+    if (kind == MINUS)
+        return "MINUS";
+    if (kind == STAR)
+        return "STAR";
+    if (kind == SLASH)
+        return "SLASH";
     if (kind == LINE)
         return "LINE";
 

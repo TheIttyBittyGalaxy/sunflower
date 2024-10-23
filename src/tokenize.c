@@ -109,6 +109,26 @@ TokenArray tokenise(const char *const src)
                 c++;
             }
         }
+        else if (*c == '+')
+        {
+            t.kind = PLUS;
+            c++;
+        }
+        else if (*c == '-')
+        {
+            t.kind = MINUS;
+            c++;
+        }
+        else if (*c == '*')
+        {
+            t.kind = STAR;
+            c++;
+        }
+        else if (*c == '/')
+        {
+            t.kind = SLASH;
+            c++;
+        }
         else if (*c == '\n')
         {
             t.kind = LINE;

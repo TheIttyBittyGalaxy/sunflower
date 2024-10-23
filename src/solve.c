@@ -6,58 +6,62 @@
 #include "solve.h"
 
 // Evaluate arc expression
+
+#define NUM_RESULT(result) ((Value){ \
+    .kind = NUM_VAL,                 \
+    .num = result})
+
+#define BOOL_RESULT(result) ((Value){ \
+    .kind = BOOL_VAL,                 \
+    .boolean = result})
+
 Value evaluate_arc_expression(Expression *expr, Value *given_values)
 {
+
     switch (expr->kind)
     {
     case NUMBER_LITERAL:
-    {
-        return (Value){
-            .kind = NUM_VAL,
-            .num = expr->number};
-    }
+        return NUM_RESULT(expr->number);
 
     case BIN_OP:
     {
         Value lhs = evaluate_arc_expression(expr->lhs, given_values);
         Value rhs = evaluate_arc_expression(expr->rhs, given_values);
 
-        bool result = false;
+        if (expr->op == MUL)
+            return NUM_RESULT(lhs.num * rhs.num);
+        if (expr->op == DIV)
+            return NUM_RESULT(lhs.num / rhs.num);
+        if (expr->op == ADD)
+            return NUM_RESULT(lhs.num + rhs.num);
+        if (expr->op == SUB)
+            return NUM_RESULT(lhs.num - rhs.num);
 
         if (expr->op == LESS_THAN)
-            result = lhs.num < rhs.num;
-        else if (expr->op == MORE_THAN)
-            result = lhs.num > rhs.num;
-        else if (expr->op == LESS_THAN_OR_EQUAL)
-            result = lhs.num <= rhs.num;
-        else if (expr->op == MORE_THAN_OR_EQUAL)
-            result = lhs.num <= rhs.num;
+            return BOOL_RESULT(lhs.num < rhs.num);
+        if (expr->op == MORE_THAN)
+            return BOOL_RESULT(lhs.num > rhs.num);
+        if (expr->op == LESS_THAN_OR_EQUAL)
+            return BOOL_RESULT(lhs.num <= rhs.num);
+        if (expr->op == MORE_THAN_OR_EQUAL)
+            return BOOL_RESULT(lhs.num <= rhs.num);
 
-        else if (expr->op == EQUAL_TO)
-            result = lhs.kind == rhs.kind && lhs.num == rhs.num; // FIXME: Using `num` regardless of the kind is probably error prone?
-        else if (expr->op == NOT_EQUAL_TO)
-            result = lhs.kind != rhs.kind || lhs.num != rhs.num; // FIXME: Using `num` regardless of the kind is probably error prone?
+        if (expr->op == EQUAL_TO)
+            return BOOL_RESULT(lhs.kind == rhs.kind && lhs.num == rhs.num); // FIXME: Using `num` regardless of the kind is probably error prone?
+        if (expr->op == NOT_EQUAL_TO)
+            return BOOL_RESULT(lhs.kind != rhs.kind || lhs.num != rhs.num); // FIXME: Using `num` regardless of the kind is probably error prone?
 
-        else if (expr->op == LOGICAL_AND)
-            result = lhs.boolean && rhs.boolean;
-        else if (expr->op == LOGICAL_OR)
-            result = lhs.boolean || rhs.boolean;
+        if (expr->op == LOGICAL_AND)
+            return BOOL_RESULT(lhs.boolean && rhs.boolean);
+        if (expr->op == LOGICAL_OR)
+            return BOOL_RESULT(lhs.boolean || rhs.boolean);
 
-        else
-        {
-            fprintf(stderr, "Unable to evaluate %s binary operation", operation_string(expr->op));
-            exit(EXIT_FAILURE);
-        }
-
-        return (Value){
-            .kind = BOOL_VAL,
-            .boolean = result};
+        fprintf(stderr, "Unable to evaluate %s binary operation", operation_string(expr->op));
+        exit(EXIT_FAILURE);
     }
 
     case ARC_VALUE:
-    {
         return given_values[expr->index];
-    }
 
     default:
     {
@@ -66,6 +70,9 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
         exit(EXIT_FAILURE);
     }
     }
+
+#undef BOOL_RESULT
+#undef NUM_RESULT
 }
 
 // Apply arc constraints

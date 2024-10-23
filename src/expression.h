@@ -25,6 +25,11 @@ typedef enum
 {
     INDEX,
 
+    MUL,
+    DIV,
+    ADD,
+    SUB,
+
     LESS_THAN,
     MORE_THAN,
     LESS_THAN_OR_EQUAL,

@@ -11,19 +11,27 @@ size_t precedence_of(Operation op)
     case INDEX:
         return 1;
 
+    case MUL:
+    case DIV:
+        return 2;
+
+    case ADD:
+    case SUB:
+        return 3;
+
     case LESS_THAN:
     case MORE_THAN:
     case LESS_THAN_OR_EQUAL:
     case MORE_THAN_OR_EQUAL:
-        return 2;
+        return 4;
 
     case EQUAL_TO:
     case NOT_EQUAL_TO:
-        return 3;
+        return 5;
 
     case LOGICAL_AND:
     case LOGICAL_OR:
-        return 4;
+        return 6;
 
     default:
     {
@@ -55,6 +63,15 @@ const char *operation_string(Operation operation)
 {
     if (operation == INDEX)
         return "INDEX";
+
+    if (operation == MUL)
+        return "MUL";
+    if (operation == DIV)
+        return "DIV";
+    if (operation == ADD)
+        return "ADD";
+    if (operation == SUB)
+        return "SUB";
 
     if (operation == LESS_THAN)
         return "LESS_THAN";
@@ -118,7 +135,7 @@ void print_expression(const Expression *expr)
 
     case BIN_OP:
     {
-        const char *op = (const char *[]){".", "<", ">", "≤", "≥", "=", "≠", "AND", "OR"}[expr->op];
+        const char *op = (const char *[]){".", "*", "/", "+", "-", "<", ">", "≤", "≥", "=", "≠", "AND", "OR"}[expr->op];
         if (precedence_of(expr->op) == 1)
         {
             print_expression(expr->lhs);

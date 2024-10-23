@@ -220,6 +220,15 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
     if (t.kind == DOT)
         infix_op = INDEX;
 
+    else if (t.kind == STAR)
+        infix_op = MUL;
+    else if (t.kind == SLASH)
+        infix_op = DIV;
+    else if (t.kind == PLUS)
+        infix_op = ADD;
+    else if (t.kind == MINUS)
+        infix_op = SUB;
+
     else if (t.kind == ARROW_L)
         infix_op = LESS_THAN;
     else if (t.kind == ARROW_R)
