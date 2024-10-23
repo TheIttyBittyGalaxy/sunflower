@@ -217,28 +217,46 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
     while (true)
     {
         // Skip combinations of instances until we find a combination that patch the placeholders of the rule
+
+        // TODO: For right now, we say that two place holders of the same node type cannot represent the same instance.
+        //       This is a "for now" solution, but I'm not sure what the semantics here really ought to be?
+
+        // CLEANUP: This code _works_, but it probably isn't particularly efficient!
+
+        // CLEANUP: Right now, this will create essentially duplicate arcs in any situation where there are
+        //          multiple placeholders of the same node types. e.g. `Thing x Thing y: x.foo = y.foo` will result in:
+        //          - 000.foo = 001.foo (2 rotations)
+        //          - 001.foo = 000.foo (2 rotations)
+        //          Once the semantics for rule selectors are decided, look into how this can best be optimised!
         {
             bool complete = false;
             size_t n = 0;
             while (n < total_placeholders)
             {
                 QuantumInstance *instance = quantum_map->instances + instance_index[n];
-                printf("n: %d, instance_index[n]: %d, instance->node: %d, rule->placeholders[n].node_type: %d, match: %s\n",
-                       n,
-                       instance_index[n],
-                       instance->node,
-                       rule->placeholders[n].node_type,
-                       instance->node == rule->placeholders[n].node_type ? "true" : "false");
-
                 if (instance->node == rule->placeholders[n].node_type)
                 {
-                    n++;
-                    continue;
+                    bool no_repeats = true;
+                    for (size_t v = 0; v < n; v++)
+                    {
+                        if (instance_index[v] == instance_index[n])
+                        {
+                            no_repeats = false;
+                            n = v;
+                            break;
+                        }
+                    }
+
+                    if (no_repeats)
+                    {
+                        n++;
+                        continue;
+                    }
                 }
 
                 instance_index[n]++;
 
-                if (instance_index[n] == quantum_map->instances_count)
+                if (instance_index[n] >= quantum_map->instances_count)
                 {
                     n++;
 
@@ -258,6 +276,8 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
             if (complete)
                 break;
         }
+
+        printf("%d %d\n", instance_index[0], instance_index[1]);
 
         // Create an arc for each constrained variable
         for (size_t rotation = 0; rotation < result.var_count; rotation++)
