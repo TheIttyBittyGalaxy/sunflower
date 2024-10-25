@@ -248,29 +248,97 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
 // Solve
 void solve(QuantumMap *quantum_map, Constraints constraints)
 {
-    enforce_single_arc_constrains(quantum_map, constraints);
-    enforce_multi_arc_constraints(quantum_map, constraints);
+    int *initial_value_for = (int *)malloc(sizeof(int) * quantum_map->variables_count);
+    int *value_for = (int *)malloc(sizeof(int) * quantum_map->variables_count);
+    uint64_t *potential_values_for = (uint64_t *)malloc(sizeof(uint64_t) * quantum_map->variables_count);
 
-    for (size_t i = 0; i < quantum_map->variables_count; i++)
+    int i = -1;
+    bool reapply_single_arc_constraints = true;
+    while (i < (int)quantum_map->variables_count)
     {
-        printf("\r%d / %d", i, quantum_map->variables_count);
+        // printf("\r%d / %d            ", i, quantum_map->variables_count);
 
-        uint64_t var_bitfield = quantum_map->variables[i];
-        if (var_bitfield == 0)
+        // printf("%03d ", i);
+        // for (int n = 0; n <= i; n++)
+        // {
+        //     printf("(");
+        //     for (size_t t = 0; t < 64; t++)
+        //         if (value_in_bitfield(t, potential_values_for[n]))
+        //             printf(t == value_for[n] ? "[%02d]" : " %02d ", t);
+        //     printf(") ");
+        // }
+
+        // printf("%02d / %02d    ", i, quantum_map->variables_count);
+        // for (int n = 0; n < quantum_map->variables_count; n++)
+        //     n <= i ? printf("  %02d", value_for[n]) : printf("    ");
+        // printf("\n");
+
+        // 1. Apply constraints
+        if (reapply_single_arc_constraints)
         {
-            // TODO: Handle this situation
-            fprintf(stderr, "\rDuring solving, we reached a state where a variable was reduced to zero possibilities.");
-            exit(EXIT_FAILURE);
+            enforce_single_arc_constrains(quantum_map, constraints);
+            reapply_single_arc_constraints = false;
+        }
+        enforce_multi_arc_constraints(quantum_map, constraints);
+
+        // 2. Check if solution is valid
+        bool valid_solution = true;
+        for (size_t n = 0; n < quantum_map->variables_count; n++)
+        {
+            if (quantum_map->variables[n] == 0)
+            {
+                valid_solution = false;
+                break;
+            }
         }
 
-        // Reduce variable to a single possibility
-        // FIXME: This method of selecting a random value will lead to bias.
-        size_t value = rand() % 64;
-        while (!value_in_bitfield(value, var_bitfield))
-            value = (value + 1) % 64;
-        quantum_map->variables[i] = 1ULL << value;
+        // 3. If solution is valid, collapse the next variable to a possible value
+        if (valid_solution)
+        {
+            i++;
+            potential_values_for[i] = quantum_map->variables[i];
 
-        enforce_multi_arc_constraints(quantum_map, constraints);
+            int value = rand() % 64;
+            while (!value_in_bitfield(value, potential_values_for[i]))
+                value = (value + 1) % 64;
+
+            initial_value_for[i] = value;
+            value_for[i] = value;
+            quantum_map->variables[i] = 1ULL << value;
+
+            continue;
+        }
+
+        // 4. If solution is not valid
+        while (true)
+        {
+            // 4.1. If we have exhausted all possible solutions, error
+            if (i == -1)
+            {
+                fprintf(stderr, "Could not find a valid solution");
+                exit(EXIT_FAILURE);
+            }
+
+            // 4.2. Select the next possible value the variable could collapse to
+            value_for[i] = (value_for[i] + 1) % 64;
+            while (!value_in_bitfield(value_for[i], potential_values_for[i]))
+                value_for[i] = (value_for[i] + 1) % 64;
+
+            // 4.3. If we haven't tried this value already, carry on
+            if (value_for[i] != initial_value_for[i])
+                break;
+
+            // 4.4. If we have exhausted all possible values, fall back to the previous variable
+            i--;
+        }
+
+        // 5. Reset solution values
+        for (size_t n = 0; n <= i; n++)
+            quantum_map->variables[n] = 1ULL << value_for[n];
+
+        for (size_t n = i + 1; n < quantum_map->variables_count; n++)
+            quantum_map->variables[n] = UINT64_MAX;
+
+        reapply_single_arc_constraints = true;
     }
-    printf("\r");
 }
