@@ -248,25 +248,14 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
 // Solve
 void solve(QuantumMap *quantum_map, Constraints constraints)
 {
-    int *initial_value_for = (int *)malloc(sizeof(int) * quantum_map->variables_count);
     int *value_for = (int *)malloc(sizeof(int) * quantum_map->variables_count);
-    uint64_t *potential_values_for = (uint64_t *)malloc(sizeof(uint64_t) * quantum_map->variables_count);
+    uint64_t *remaining_values_for = (uint64_t *)malloc(sizeof(uint64_t) * quantum_map->variables_count);
 
     int i = -1;
     bool reapply_single_arc_constraints = true;
     while (i < (int)quantum_map->variables_count)
     {
-        // printf("\r%d / %d            ", i, quantum_map->variables_count);
-
-        // printf("%03d ", i);
-        // for (int n = 0; n <= i; n++)
-        // {
-        //     printf("(");
-        //     for (size_t t = 0; t < 64; t++)
-        //         if (value_in_bitfield(t, potential_values_for[n]))
-        //             printf(t == value_for[n] ? "[%02d]" : " %02d ", t);
-        //     printf(") ");
-        // }
+        printf("\r%d / %d            ", i, quantum_map->variables_count);
 
         // printf("%02d / %02d    ", i, quantum_map->variables_count);
         // for (int n = 0; n < quantum_map->variables_count; n++)
@@ -296,15 +285,16 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
         if (valid_solution)
         {
             i++;
-            potential_values_for[i] = quantum_map->variables[i];
+            remaining_values_for[i] = quantum_map->variables[i];
 
             int value = rand() % 64;
-            while (!value_in_bitfield(value, potential_values_for[i]))
+            while (!value_in_bitfield(value, remaining_values_for[i]))
                 value = (value + 1) % 64;
 
-            initial_value_for[i] = value;
+            uint64_t bitfield = 1ULL << value;
             value_for[i] = value;
-            quantum_map->variables[i] = 1ULL << value;
+            quantum_map->variables[i] = bitfield;
+            remaining_values_for[i] -= bitfield;
 
             continue;
         }
@@ -319,17 +309,22 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
                 exit(EXIT_FAILURE);
             }
 
-            // 4.2. Select the next possible value the variable could collapse to
-            value_for[i] = (value_for[i] + 1) % 64;
-            while (!value_in_bitfield(value_for[i], potential_values_for[i]))
-                value_for[i] = (value_for[i] + 1) % 64;
+            // 4.2. If we have exhausted all possible values, fall back to the previous variable
+            if (remaining_values_for[i] == 0)
+            {
+                i--;
+                continue;
+            }
 
-            // 4.3. If we haven't tried this value already, carry on
-            if (value_for[i] != initial_value_for[i])
-                break;
+            // 4.3. Select a random remaining value the variable could collapse to
+            int value = rand() % 64;
+            while (!value_in_bitfield(value, remaining_values_for[i]))
+                value = (value + 1) % 64;
 
-            // 4.4. If we have exhausted all possible values, fall back to the previous variable
-            i--;
+            value_for[i] = value;
+            remaining_values_for[i] -= 1ULL << value;
+
+            break;
         }
 
         // 5. Reset solution values
