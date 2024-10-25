@@ -1,0 +1,11 @@
+DEF Thing {
+    id: num
+    chain: num
+}
+
+FOR Thing x: x.id < 6
+FOR Thing x: x.id != 0
+FOR Thing x Thing y: x.id != y.id
+
+FOR Thing x: (x.id > 2) OR (x.chain = 1)
+FOR Thing a Thing b Thing r: (r.id != a.id + 2) OR (r.id != b.id + 1) OR (a.chain + b.chain = r.chain)
