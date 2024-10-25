@@ -126,7 +126,6 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
     // Enforce each arc
     for (size_t arc_index = 0; arc_index < constraints.multi_arcs_count; arc_index++)
     {
-
         Arc *arc = constraints.multi_arcs + arc_index;
         size_t primary_index = arc->variable_indexes[0];
         size_t total_variables = arc->variable_indexes_count;
@@ -183,7 +182,7 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
 
                         var_value[n]++;
 
-                        if (var_value[n] == 64)
+                        while (var_value[n] == 64)
                         {
                             n++;
 
@@ -194,10 +193,12 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
                             }
 
                             var_value[n]++;
-                            for (size_t v = 1; v < n; v++)
-                                var_value[v] = 0;
-                            n = 1;
                         }
+
+                        for (size_t v = 1; v < n; v++)
+                            var_value[v] = 0;
+
+                        n = 1;
                     }
 
                     if (end_of_possible_values)
