@@ -6,4 +6,5 @@ DEF Thing {
 FOR Thing x: x.id < 5
 FOR Thing x Thing y: x.id != y.id
 
+FOR Thing x: x.chain != 0
 FOR Thing x Thing y: (x.id != y.id + 1) OR (x.chain = y.chain * 2)
