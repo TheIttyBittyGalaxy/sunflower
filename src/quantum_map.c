@@ -65,7 +65,7 @@ void print_quantum_map(QuantumMap *quantum_map)
         {
             Property *property = node->properties + p;
             uint64_t *var_bitfield = quantum_map->variables + (instance->variables_array_index + p);
-            printf("\t%.*s: ", property->name.len, property->name.str);
+            printf("\t%.*s:\t", property->name.len, property->name.str);
             print_bitfield(*var_bitfield);
             printf("\n");
         }

@@ -255,7 +255,7 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
     bool reapply_single_arc_constraints = true;
     while (i < (int)quantum_map->variables_count)
     {
-        printf("\r%d / %d            ", i, quantum_map->variables_count);
+        // printf("\r%d / %d            ", i, quantum_map->variables_count);
 
         // printf("%02d / %02d    ", i, quantum_map->variables_count);
         // for (int n = 0; n < quantum_map->variables_count; n++)
@@ -336,4 +336,5 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
 
         reapply_single_arc_constraints = true;
     }
+    // printf("\n");
 }

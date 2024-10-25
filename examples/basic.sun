@@ -1,10 +1,9 @@
 DEF Thing {
     id: num
-    chain: num
+    next: num
 }
 
 FOR Thing x: x.id < 5
 FOR Thing x Thing y: x.id != y.id
 
-FOR Thing x: x.chain != 0
-FOR Thing x Thing y: (x.id != y.id + 1) OR (x.chain = y.chain * 2)
+FOR Thing x: (x.id = 4 AND x.next = 0) OR (x.id != 4 AND x.next = x.id + 1)

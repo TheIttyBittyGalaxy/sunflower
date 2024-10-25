@@ -164,13 +164,6 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
     //        it is clearer how this should be done, fix this!
     Expression *arc_expression = convert_expression(&result, rule, rule->expression);
 
-    for (size_t i = 0; i < result.var_info_count; i++)
-    {
-        VariableInfo info = result.var_info[i];
-        printf("%d: [%d].%d\n", i, info.placeholder_index, info.property_offset);
-    }
-    printf("\n");
-
     if (result.var_count == 0)
     {
         fprintf(stderr, "Internal error: Somehow created an arc that constraints no values");
@@ -328,17 +321,22 @@ Constraints create_constraints(Program *program, QuantumMap *quantum_map)
 // Printing & strings
 void print_arc(Arc *arc)
 {
-    printf("\t");
     for (size_t i = 0; i < arc->variable_indexes_count; i++)
         printf("%03d  ", arc->variable_indexes[i]);
     print_expression(arc->expr);
-    printf("\n");
 }
 
 void print_constraints(Constraints constraints)
 {
     for (size_t i = 0; i < constraints.single_arcs_count; i++)
+    {
         print_arc(constraints.single_arcs + i);
+        printf("\n");
+    }
+
     for (size_t i = 0; i < constraints.multi_arcs_count; i++)
+    {
         print_arc(constraints.multi_arcs + i);
+        printf("\n");
+    }
 }
