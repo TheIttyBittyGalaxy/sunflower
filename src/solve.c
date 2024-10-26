@@ -15,7 +15,7 @@
     .kind = BOOL_VAL,                 \
     .boolean = result})
 
-Value evaluate_arc_expression(Expression *expr, Value *given_values)
+Value evaluate_arc_expression(Arc *arc, Expression *expr, Value *given_values)
 {
 
     switch (expr->kind)
@@ -25,8 +25,8 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
 
     case BIN_OP:
     {
-        Value lhs = evaluate_arc_expression(expr->lhs, given_values);
-        Value rhs = evaluate_arc_expression(expr->rhs, given_values);
+        Value lhs = evaluate_arc_expression(arc, expr->lhs, given_values);
+        Value rhs = evaluate_arc_expression(arc, expr->rhs, given_values);
 
         if (expr->op == MUL)
             return NUM_RESULT(lhs.num * rhs.num);
@@ -61,7 +61,10 @@ Value evaluate_arc_expression(Expression *expr, Value *given_values)
     }
 
     case ARC_VALUE:
-        return given_values[expr->index];
+    {
+        size_t index = (expr->index + arc->expr_rotation) % arc->variable_indexes_count;
+        return given_values[index];
+    }
 
     default:
     {
@@ -95,7 +98,7 @@ void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constrai
                 continue;
 
             given_value.num = value; // TODO: This is temporary. Eventually not all variables will be numbers.
-            bool result = evaluate_arc_expression(arc->expr, &given_value).boolean;
+            bool result = evaluate_arc_expression(arc, arc->expr, &given_value).boolean;
 
             if (!result)
                 var_bitfield -= value_bitfield;
@@ -208,7 +211,7 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
                 // Evaluate the set of possible variables to determine if the primary value is a valid possibility
                 for (size_t v = 0; v < total_variables; v++)
                     expression_values[v].num = var_value[v]; // TODO: This is temporary. Eventually not all variables will be numbers.
-                bool result = evaluate_arc_expression(arc->expr, expression_values).boolean;
+                bool result = evaluate_arc_expression(arc, arc->expr, expression_values).boolean;
 
                 if (result)
                 {

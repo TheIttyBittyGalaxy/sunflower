@@ -116,43 +116,6 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
     return expr;
 }
 
-// Create a copy of an arc expresion where each the variable index for each arc value is rotated by a given amount
-Expression *rotate_arc_expression(Expression *original_expr, size_t rotation, size_t variable_count)
-{
-    Expression *expr = NEW(Expression);
-
-    switch (original_expr->kind)
-    {
-    case NUMBER_LITERAL:
-    {
-        memcpy(expr, original_expr, sizeof(Expression));
-        break;
-    }
-    case BIN_OP:
-    {
-        expr->kind = BIN_OP;
-        expr->op = original_expr->op;
-        expr->lhs = rotate_arc_expression(original_expr->lhs, rotation, variable_count);
-        expr->rhs = rotate_arc_expression(original_expr->rhs, rotation, variable_count);
-        break;
-    }
-    case ARC_VALUE:
-    {
-        expr->kind = ARC_VALUE;
-        expr->index = (original_expr->index + rotation) % variable_count;
-        break;
-    }
-    default:
-    {
-        fprintf(stderr, "Attempt to copy %s arc expression", expression_kind_string(original_expr->kind));
-        print_expression(original_expr);
-        exit(EXIT_FAILURE);
-    }
-    }
-
-    return expr;
-}
-
 // Create constraints
 void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *quantum_map)
 {
@@ -192,15 +155,6 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
     }
 
     // Arcs that constrain a multiple variables (and thus may have multiple placeholders)
-    Expression *arc_expressions = (Expression *)malloc(sizeof(Expression) * result.var_count);
-
-    // FIXME: This almost certainly causes memory leaks?
-    // CLEANUP: Rather than storing rotated expressions in memory, we should
-    //          just rotate the ARC_VALUE expression nodes in real time
-    arc_expressions[0] = *arc_expression;
-    for (size_t rotation = 1; rotation < result.var_count; rotation++)
-        arc_expressions[rotation] = *rotate_arc_expression(arc_expression, rotation, result.var_count);
-
     size_t total_placeholders = rule->placeholders_count;
     size_t *instance_index = (size_t *)malloc(sizeof(size_t) * total_placeholders);
 
@@ -274,7 +228,8 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
         for (size_t rotation = 0; rotation < result.var_count; rotation++)
         {
             Arc *arc = EXTEND_ARRAY(constraints->multi_arcs, Arc);
-            arc->expr = arc_expressions + rotation;
+            arc->expr = arc_expression;
+            arc->expr_rotation = rotation;
             arc->variable_indexes_count = result.var_count;
             arc->variable_indexes = (size_t *)malloc(sizeof(size_t) * arc->variable_indexes_count);
             for (size_t v = 0; v < result.var_count; v++)
@@ -322,7 +277,7 @@ Constraints create_constraints(Program *program, QuantumMap *quantum_map)
 void print_arc(Arc *arc)
 {
     for (size_t i = 0; i < arc->variable_indexes_count; i++)
-        printf("%03d  ", arc->variable_indexes[i]);
+        printf("%03d  ", (arc->variable_indexes[i] + arc->expr_rotation) % arc->variable_indexes_count);
     print_expression(arc->expr);
 }
 

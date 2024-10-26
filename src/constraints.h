@@ -14,6 +14,7 @@ typedef struct
 {
     size_t *variable_indexes;
     size_t variable_indexes_count;
+    size_t expr_rotation;
     Expression *expr;
 } Arc;
 
