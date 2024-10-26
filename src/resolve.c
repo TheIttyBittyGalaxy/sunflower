@@ -13,13 +13,27 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr);
 // Resolve
 void resolve(Program *program)
 {
+    // Resolve nodes
     for (size_t i = 0; i < program->nodes_count; i++)
-        resolve_node(program, program->nodes + i);
+    {
+        Node *node = program->nodes + i;
+        resolve_node(program, node);
 
+        // Check that name is not used by another node
+        for (size_t j = i + 1; j < program->nodes_count; j++)
+        {
+            Node other = program->nodes[j];
+            if (substrings_match(node->name, other.name))
+            {
+                fprintf(stderr, "There are conflicting declarations for the '%.*s' node", node->name.len, node->name.str);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    // Resolve rules
     for (size_t i = 0; i < program->rules_count; i++)
         resolve_rule(program, program->rules + i);
-
-    // TODO: Check for conflicting node names
 }
 
 void resolve_node(Program *program, Node *node)
