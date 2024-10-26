@@ -22,21 +22,6 @@ bool is_word_or_digit(const char c)
     return is_word(c) || is_digit(c);
 }
 
-// Token array method
-
-void append_token(TokenArray *const array, const Token value)
-{
-    if (array->count == array->length)
-    {
-        size_t new_length = array->length * 2;
-        array->values = (Token *)realloc(array->values, sizeof(Token) * new_length);
-        array->length = new_length;
-    }
-
-    array->values[array->count] = value;
-    array->count++;
-}
-
 // Tokenise
 TokenArray tokenise(const char *const src)
 {
@@ -49,7 +34,7 @@ TokenArray tokenise(const char *const src)
     const char *line_start = src;
     size_t line = 1;
 
-    while (*c != '\0')
+    while (true)
     {
         Token t;
         t.kind = INVALID_TOKEN;
@@ -58,7 +43,12 @@ TokenArray tokenise(const char *const src)
         t.line = line;
         t.column = (size_t)(c - line_start) + 1;
 
-        if (*c == ':')
+        if (*c == '\0')
+        {
+            t.kind = END_OF_FILE;
+            t.str.len = 0;
+        }
+        else if (*c == ':')
         {
             t.kind = COLON;
             c++;
@@ -184,16 +174,19 @@ TokenArray tokenise(const char *const src)
             c++;
         }
 
-        append_token(&tokens, t);
-    }
+        if (tokens.count == tokens.length)
+        {
+            size_t new_length = tokens.length * 2;
+            tokens.values = (Token *)realloc(tokens.values, sizeof(Token) * new_length);
+            tokens.length = new_length;
+        }
 
-    Token eof;
-    eof.str.str = c;
-    eof.str.len = 1;
-    eof.kind = END_OF_FILE;
-    eof.line = line;
-    eof.column = c - line_start + 1;
-    append_token(&tokens, eof);
+        tokens.values[tokens.count] = t;
+        tokens.count++;
+
+        if (t.kind == END_OF_FILE)
+            break;
+    }
 
     return tokens;
 }
