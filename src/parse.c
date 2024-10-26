@@ -179,17 +179,14 @@ Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
     {
         Token t = eat(parser, NUMBER);
 
-        // CLEANUP: Surely there's a better way of doing this?
-        size_t len = (t.str.len + 1);
-        char *temp = (char *)malloc(sizeof(char) * len);
-        strncpy(temp, t.str.str, t.str.len);
-        temp[len] = '\0';
+        int num = 0;
+
+        for (size_t i = 0; i < t.str.len; i++)
+            num = num * 10 + ((int)(t.str.str[i]) - 48);
 
         expr = NEW(Expression);
         expr->kind = NUMBER_LITERAL;
-        expr->number = atoi(temp);
-
-        free(temp);
+        expr->number = num;
     }
 
     // Error if prefix not found
