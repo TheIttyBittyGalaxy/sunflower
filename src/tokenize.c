@@ -34,8 +34,6 @@ TokenArray tokenise(const char *const src)
     const char *line_start = src;
     size_t line = 1;
 
-    // TODO: Allow comments
-
     while (true)
     {
         Token t;
@@ -137,6 +135,12 @@ TokenArray tokenise(const char *const src)
         {
             t.kind = SLASH;
             c++;
+            if (*c == '/')
+            {
+                while (*c != '\n' && *c != '\0')
+                    c++;
+                continue; // Skip emitting a token
+            }
         }
         else if (*c == '\n')
         {
@@ -148,7 +152,7 @@ TokenArray tokenise(const char *const src)
         else if (*c == ' ' || *c == '\t' || *c == '\r')
         {
             c++;
-            continue; // Skip this character without generating a token
+            continue; // Skip emitting a token
         }
         else if (is_digit(*c))
         {
