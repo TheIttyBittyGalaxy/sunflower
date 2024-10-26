@@ -3,24 +3,23 @@
 #include "resolve.h"
 
 // Resolve methods
-void resolve_program(Program *program);
 void resolve_node(Program *program, Node *node);
 void resolve_rule(Program *program, Rule *rule);
 Expression *resolve_expression(Program *program, Rule *rule, Expression *expr);
 
+// TODO: Create language errors, rather than terminating the entire program
+// TODO: Update errors for maximum usability (i.e. clear error messages, line numbers, etc)
+
 // Resolve
 void resolve(Program *program)
-{
-    resolve_program(program);
-}
-
-void resolve_program(Program *program)
 {
     for (size_t i = 0; i < program->nodes_count; i++)
         resolve_node(program, program->nodes + i);
 
     for (size_t i = 0; i < program->rules_count; i++)
         resolve_rule(program, program->rules + i);
+
+    // TODO: Check for conflicting node names
 }
 
 void resolve_node(Program *program, Node *node)
@@ -29,7 +28,7 @@ void resolve_node(Program *program, Node *node)
     {
         Property property = node->properties[i];
 
-        // TODO: Check the kind of each property is valid
+        // TODO: Check that the kind of each property is valid
 
         // Check that name is not used by another property
         for (size_t j = i + 1; j < node->properties_count; j++)
@@ -99,7 +98,6 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             }
         }
 
-        // TODO: Report line number and column
         fprintf(stderr, "Error. Placeholder %.*s does not exist\n", unresolved_name.len, unresolved_name.str);
         exit(EXIT_FAILURE);
     }
@@ -108,9 +106,9 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
     {
         if (expr->op == INDEX)
         {
+            // TODO: Resolve index operations correctly! Right now we just assume the index is a valid shallow index into a placeholder
             expr->lhs = resolve_expression(program, rule, expr->lhs);
             expr->rhs->kind = PROPERTY_NAME;
-            // TODO: Check that the rhs is a valid property of the lhs's node type
         }
         else
         {
