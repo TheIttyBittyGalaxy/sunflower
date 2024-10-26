@@ -22,11 +22,28 @@ bool is_word_or_digit(const char c)
     return is_word(c) || is_digit(c);
 }
 
+// Token array method
+
+void append_token(TokenArray *const array, const Token value)
+{
+    if (array->count == array->length)
+    {
+        size_t new_length = array->length * 2;
+        array->values = (Token *)realloc(array->values, sizeof(Token) * new_length);
+        array->length = new_length;
+    }
+
+    array->values[array->count] = value;
+    array->count++;
+}
+
 // Tokenise
 TokenArray tokenise(const char *const src)
 {
     TokenArray tokens;
-    initialise_token_array(&tokens, 8); // TODO: What is a good starting value for the length of the array?
+    tokens.length = 64; // TODO: What is a good starting value for the length of the array?
+    tokens.count = 0;
+    tokens.values = (Token *)malloc(sizeof(Token) * tokens.length);
 
     const char *c = src;
     const char *line_start = src;
@@ -167,7 +184,7 @@ TokenArray tokenise(const char *const src)
             c++;
         }
 
-        append_token_to_array(&tokens, t);
+        append_token(&tokens, t);
     }
 
     Token eof;
@@ -176,7 +193,7 @@ TokenArray tokenise(const char *const src)
     eof.kind = END_OF_FILE;
     eof.line = line;
     eof.column = c - line_start + 1;
-    append_token_to_array(&tokens, eof);
+    append_token(&tokens, eof);
 
     return tokens;
 }

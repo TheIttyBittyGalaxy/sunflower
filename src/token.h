@@ -52,22 +52,9 @@ typedef struct
 typedef struct
 {
     size_t length;
-    union
-    {
-        Token *values;
-        Token *first;
-    };
-    union
-    {
-        size_t count;
-        size_t next_index;
-    };
+    Token *values;
+    size_t count;
 } TokenArray;
-
-// Token array methods
-void initialise_token_array(TokenArray *const array, const size_t size);
-void reallocate_token_array(TokenArray *const array, const size_t size);
-void append_token_to_array(TokenArray *const array, const Token value);
 
 // Strings & printing
 const char *token_kind_string(TokenKind kind);

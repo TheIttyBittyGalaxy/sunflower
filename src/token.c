@@ -3,49 +3,6 @@
 
 #include "token.h"
 
-// Token array methods
-
-// CLEANUP: These functions are (should?) only be used by the tokeniser.
-//          It is probably worth factoring these functions out of existence.
-
-void initialise_token_array(TokenArray *const array, const size_t size)
-{
-    array->values = size > 0
-                        ? (Token *)malloc(sizeof(Token) * size)
-                        : NULL;
-
-    array->length = size;
-    array->count = 0;
-};
-
-void reallocate_token_array(TokenArray *const array, const size_t size)
-{
-    if (size > 0)
-    {
-        array->values = (array->length == 0)
-                            ? (Token *)malloc(sizeof(Token) * size)
-                            : (Token *)realloc(array->values, sizeof(Token) * size);
-    }
-    else if (array->length > 0)
-    {
-        free(array->values);
-        array->values = NULL;
-    }
-
-    array->length = size;
-    if (array->count > array->length)
-        array->count = array->length;
-}
-
-void append_token_to_array(TokenArray *const array, const Token value)
-{
-    if (array->count == array->length)
-        reallocate_token_array(array, array->length > 0 ? array->length * 2 : 1);
-
-    array->values[array->next_index] = value;
-    array->next_index++;
-}
-
 // Strings & printing
 const char *token_kind_string(TokenKind kind)
 {
