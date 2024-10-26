@@ -25,8 +25,23 @@ void resolve_program(Program *program)
 
 void resolve_node(Program *program, Node *node)
 {
-    // TODO: Check that there are no duplicate property names
-    // TODO: Check the kind of each property is valid
+    for (size_t i = 0; i < node->properties_count; i++)
+    {
+        Property property = node->properties[i];
+
+        // TODO: Check the kind of each property is valid
+
+        // Check that name is not used by another property
+        for (size_t j = i + 1; j < node->properties_count; j++)
+        {
+            Property other = node->properties[j];
+            if (substrings_match(property.name, other.name))
+            {
+                fprintf(stderr, "Declaration for '%.*s' contains conflicting definitions for '%.*s' property", node->name.len, node->name.str, property.name.len, property.name.str);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 void resolve_rule(Program *program, Rule *rule)
