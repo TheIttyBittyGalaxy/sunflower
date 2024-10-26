@@ -3,6 +3,18 @@
 #include "program.h"
 
 // Strings & printing
+const char *type_category_string(TypeCategory type_category)
+{
+    if (type_category == TYPE_NULL)
+        return "TYPE_NULL";
+    if (type_category == TYPE_NUM)
+        return "TYPE_NUM";
+    if (type_category == TYPE_NODE)
+        return "TYPE_NODE";
+
+    return "INVALID_TYPE_CATEGORY";
+}
+
 void print_program(const Program *program)
 {
     printf("PROGRAM\n");
@@ -23,8 +35,18 @@ void print_node(const Node *node)
     {
         if (i > 0)
             printf(", ");
+
         Property p = node->properties[i];
-        printf("%.*s: %.*s", p.name.len, p.name.str, p.kind_name.len, p.kind_name.str);
+        printf("%.*s: ", p.name.len, p.name.str);
+
+        if (p.type == TYPE_NULL)
+            printf("NULL (%.*s)", p.type_name.len, p.type_name.str);
+        else if (p.type == TYPE_NUM)
+            printf("NUM");
+        else if (p.type == TYPE_NODE)
+            printf("NODE %.*s (%.*s)", p.node_type->name.len, p.node_type->name.str, p.type_name.len, p.type_name.str);
+        else
+            printf("INVALID (%.*s)", p.type_name.len, p.type_name.str);
     }
     printf(" }\n");
 }

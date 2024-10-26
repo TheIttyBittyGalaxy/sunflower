@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "resolve.h"
 
@@ -11,12 +12,14 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr);
 void resolve(Program *program)
 {
     // Check that node and property names are not duplicated
-    for (size_t i = 0; i < program->nodes_count; i++)
+    for (size_t n = 0; n < program->nodes_count; n++)
     {
-        Node *node = program->nodes + i;
+        Node *node = program->nodes + n;
+
+        // TODO: Prevent illegal node names (e.g. `num`)
 
         // Check for duplicate names
-        for (size_t j = i + 1; j < program->nodes_count; j++)
+        for (size_t j = n + 1; j < program->nodes_count; j++)
         {
             Node other = program->nodes[j];
             if (substrings_match(node->name, other.name))
@@ -26,36 +29,61 @@ void resolve(Program *program)
             }
         }
 
-        // Check for duplicate property names
-        // TODO: Resolve the type of each property
-        for (size_t i = 0; i < node->properties_count; i++)
+        // Check for duplicate property names and resolve the type of each property
+        for (size_t p = 0; p < node->properties_count; p++)
         {
-            Property property = node->properties[i];
+            Property *property = node->properties + p;
 
-            for (size_t j = i + 1; j < node->properties_count; j++)
+            // Check for duplicate property names
+            for (size_t j = p + 1; j < node->properties_count; j++)
             {
                 Property other = node->properties[j];
-                if (substrings_match(property.name, other.name))
+                if (substrings_match(property->name, other.name))
                 {
-                    fprintf(stderr, "Declaration for '%.*s' contains conflicting definitions for '%.*s' property", node->name.len, node->name.str, property.name.len, property.name.str);
+                    fprintf(stderr, "Declaration for '%.*s' contains conflicting definitions for '%.*s' property", node->name.len, node->name.str, property->name.len, property->name.str);
                     exit(EXIT_FAILURE);
                 }
+            }
+
+            // Resolve the property's type
+            if (property->type_name.len == 3 && (strncmp(property->type_name.str, "num", 3) == 0))
+            {
+                property->type = TYPE_NUM;
+            }
+            else
+            {
+                for (size_t j = 0; j < program->nodes_count; j++)
+                {
+                    Node *node = program->nodes + j;
+                    if (substrings_match(node->name, property->type_name))
+                    {
+                        property->type = TYPE_NODE;
+                        property->node_type = node;
+                        break;
+                    }
+                }
+            }
+
+            if (property->type == TYPE_NULL)
+            {
+                fprintf(stderr, "Type '%.*s' of '%.*s' property does not exist.", property->type_name.len, property->type_name.str, property->name.len, property->name.str);
+                exit(EXIT_FAILURE);
             }
         }
     }
 
     // Resolve rules
-    for (size_t i = 0; i < program->rules_count; i++)
+    for (size_t r = 0; r < program->rules_count; r++)
     {
-        Rule *rule = program->rules + i;
+        Rule *rule = program->rules + r;
 
         // Check for duplicate placeholder names and resolve the type of each placeholder
-        for (size_t i = 0; i < rule->placeholders_count; i++)
+        for (size_t p = 0; p < rule->placeholders_count; p++)
         {
-            Placeholder *placeholder = rule->placeholders + i;
+            Placeholder *placeholder = rule->placeholders + p;
 
             // Check for duplicate names
-            for (size_t j = i + 1; j < rule->placeholders_count; j++)
+            for (size_t j = p + 1; j < rule->placeholders_count; j++)
             {
                 Placeholder other = rule->placeholders[j];
                 if (substrings_match(placeholder->name, other.name))
@@ -119,6 +147,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
         }
         else
         {
+            // TODO: Type check operands
             expr->lhs = resolve_expression(program, rule, expr->lhs);
             expr->rhs = resolve_expression(program, rule, expr->rhs);
         }

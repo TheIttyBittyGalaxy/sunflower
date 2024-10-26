@@ -106,7 +106,9 @@ void parse_node_declaration(Parser *parser)
     {
         Property *property = EXTEND_ARRAY(node->properties, Property);
         property->name = NULL_SUB_STRING;
-        property->kind_name = NULL_SUB_STRING;
+        property->type = TYPE_NULL;
+        property->type_name = NULL_SUB_STRING;
+        property->node_type = NULL;
 
         Token property_name = eat(parser, NAME);
         property->name = property_name.str;
@@ -114,7 +116,7 @@ void parse_node_declaration(Parser *parser)
         eat(parser, COLON);
 
         Token property_kind = eat(parser, NAME);
-        property->kind_name = property_kind.str;
+        property->type_name = property_kind.str;
     }
 
     eat(parser, CURLY_R);

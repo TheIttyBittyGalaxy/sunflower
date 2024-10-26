@@ -34,6 +34,8 @@ TokenArray tokenise(const char *const src)
     const char *line_start = src;
     size_t line = 1;
 
+    // TODO: Allow comments
+
     while (true)
     {
         Token t;

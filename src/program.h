@@ -7,20 +7,34 @@
 #include "expression.h"
 #include "sub_string.h"
 
+// Type
+typedef enum
+{
+    TYPE_NULL,
+    TYPE_NUM,
+    TYPE_NODE
+} TypeCategory;
+
+// Forward declarations
+typedef struct Property Property;
+typedef struct Node Node;
+
 // Property
-typedef struct
+struct Property
 {
     sub_string name;
-    sub_string kind_name;
-} Property;
+    TypeCategory type;
+    sub_string type_name;
+    Node *node_type;
+};
 
 // Node
-typedef struct
+struct Node
 {
     sub_string name;
     Property *properties;
     size_t properties_count;
-} Node;
+};
 
 // Placeholder
 // Placeholder is declared differently here as it is forward declared in "expression.h"
@@ -50,6 +64,7 @@ typedef struct
 } Program;
 
 // Strings & printing
+const char *type_category_string(TypeCategory type_category);
 void print_program(const Program *program);
 void print_node(const Node *node);
 void print_rule(const Rule *rule);
