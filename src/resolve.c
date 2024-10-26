@@ -46,11 +46,23 @@ void resolve_node(Program *program, Node *node)
 
 void resolve_rule(Program *program, Rule *rule)
 {
-    // TODO: Check that there are no duplicate placeholder names
-
     for (size_t i = 0; i < rule->placeholders_count; i++)
     {
         Placeholder *placeholder = rule->placeholders + i;
+
+        // Check that name is not used by another placeholder
+        for (size_t j = i + 1; j < rule->placeholders_count; j++)
+        {
+            Placeholder other = rule->placeholders[j];
+            if (substrings_match(placeholder->name, other.name))
+            {
+                fprintf(stderr, "Rule contains multiple placeholders named '%.*s'", placeholder->name.len, placeholder->name.str);
+                print_rule(rule);
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // Resolve the placeholder's node type
         for (size_t n = 0; n < program->nodes_count; n++)
         {
             Node *node = program->nodes + n;
