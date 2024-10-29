@@ -1,1 +1,1 @@
-g++ -o main src/*.c
+g++ -o main src/*.c -Wall -Wextra -Wuninitialized
