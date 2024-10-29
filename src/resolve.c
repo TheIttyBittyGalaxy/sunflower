@@ -16,7 +16,12 @@ void resolve(Program *program)
     {
         Node *node = program->nodes + n;
 
-        // TODO: Prevent illegal node names (e.g. `num`)
+        // Prevent illegal node names
+        if (node->name.len == 3 && (strncmp(node->name.str, "num", 3) == 0))
+        {
+            fprintf(stderr, "Cannot name Node '%.*s' as this is an existing type", node->name.len, node->name.str);
+            exit(EXIT_FAILURE);
+        }
 
         // Check for duplicate names
         for (size_t j = n + 1; j < program->nodes_count; j++)
