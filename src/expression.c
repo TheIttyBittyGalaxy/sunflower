@@ -87,9 +87,9 @@ const char *operation_string(Operation operation)
     if (operation == NOT_EQUAL_TO)
         return "NOT_EQUAL_TO";
 
-    if (operation = LOGICAL_AND)
+    if (operation == LOGICAL_AND)
         return "LOGICAL_AND";
-    if (operation = LOGICAL_OR)
+    if (operation == LOGICAL_OR)
         return "LOGICAL_OR";
 
     return "INVALID_OPERATION";
