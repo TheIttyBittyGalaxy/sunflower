@@ -89,12 +89,6 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
             {
                 Property *property = node->properties + i;
 
-                if (property->type != TYPE_NUM)
-                {
-                    fprintf(stderr, "Internal error: Currently unable to create constraints for and/or solve properties that aren't `num`");
-                    exit(EXIT_FAILURE);
-                }
-
                 if (substrings_match(field_name, property->name))
                 {
                     expr->index = get_variable_index_for(result, placeholder_index, i);

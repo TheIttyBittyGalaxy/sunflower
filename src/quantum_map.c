@@ -32,8 +32,6 @@ QuantumMap *create_quantum_map(Program *program)
 
     quantum_map->variables_count = var_index;
     quantum_map->variables = (uint64_t *)malloc(sizeof(uint64_t) * quantum_map->variables_count);
-    for (size_t i = 0; i < quantum_map->variables_count; i++)
-        quantum_map->variables[i] = UINT64_MAX;
 
     return quantum_map;
 }

@@ -1,6 +1,6 @@
 DEF Thing {
     id: num
-    next: num // Change this to be Thing
+    next: Thing
 }
 
 FOR Thing x: x.id < 5

@@ -248,9 +248,55 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
 #undef var_value
 }
 
+// Reset solution values
+void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
+{
+    for (size_t i = 0; i < quantum_map->instances_count; i++)
+    {
+        QuantumInstance *instance = quantum_map->instances + i;
+        Node *node = instance->node;
+        for (size_t p = 0; p < node->properties_count; p++)
+        {
+            int v = instance->variables_array_index + p;
+            if (v <= ignore_index_and_before)
+                continue;
+
+            Property *property = node->properties + p;
+
+            if (property->type == TYPE_NUM)
+            {
+                quantum_map->variables[v] = UINT64_MAX;
+            }
+
+            else if (property->type == TYPE_NODE)
+            {
+                uint64_t bitfield = 0;
+                for (size_t k = 0; k < 64; k++)
+                {
+                    if (k >= quantum_map->instances_count)
+                        break;
+
+                    if (quantum_map->instances[k].node == property->node_type)
+                        bitfield = bitfield | (1ULL << k);
+                }
+
+                quantum_map->variables[v] = bitfield;
+            }
+
+            else
+            {
+                fprintf(stderr, "Internal error: Encountered %s while resetting variables", type_category_string(property->type));
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+}
+
 // Solve
 void solve(QuantumMap *quantum_map, Constraints constraints)
 {
+    reset_solution_values(quantum_map, -1);
+
     int *value_for = (int *)malloc(sizeof(int) * quantum_map->variables_count);
     uint64_t *remaining_values_for = (uint64_t *)malloc(sizeof(uint64_t) * quantum_map->variables_count);
 
@@ -331,11 +377,9 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
         }
 
         // 5. Reset solution values
-        for (size_t n = 0; n <= i; n++)
+        reset_solution_values(quantum_map, i);
+        for (int n = 0; n <= i; n++)
             quantum_map->variables[n] = 1ULL << value_for[n];
-
-        for (size_t n = i + 1; n < quantum_map->variables_count; n++)
-            quantum_map->variables[n] = UINT64_MAX;
 
         reapply_single_arc_constraints = true;
     }
