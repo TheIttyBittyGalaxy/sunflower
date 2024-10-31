@@ -102,7 +102,7 @@ struct Expression
 
 // Precedence
 typedef size_t Precedence;
-const size_t MIN_PRECEDENCE = SIZE_MAX;
+static const size_t MIN_PRECEDENCE = SIZE_MAX;
 size_t precedence_of(Operation op);
 
 // Strings & printing
