@@ -1,5 +1,5 @@
-#ifndef Solve_H
-#define Solve_H
+#ifndef SOLVE_H
+#define SOLVE_H
 
 #include "constraints.h"
 #include "quantum_map.h"

@@ -1,5 +1,5 @@
-#ifndef ARC_H
-#define ARC_H
+#ifndef CONSTRAINTS_H
+#define CONSTRAINTS_H
 
 #include <stdlib.h>
 
