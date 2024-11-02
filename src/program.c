@@ -29,6 +29,8 @@ void print_node(const Node *node)
 
         if (p.type.primitive == TYPE_PRIMITIVE__INVALID)
             printf("INVALID TYPE (%.*s)", p.type_name.len, p.type_name.str);
+        if (p.type.primitive == TYPE_PRIMITIVE__UNRESOLVED)
+            printf("UNRESOLVED TYPE (%.*s)", p.type_name.len, p.type_name.str);
         else if (p.type.primitive == TYPE_PRIMITIVE__NUMBER)
             printf("NUM");
         else if (p.type.primitive == TYPE_PRIMITIVE__BOOL)

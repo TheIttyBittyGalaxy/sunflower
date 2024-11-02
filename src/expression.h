@@ -15,6 +15,8 @@ typedef struct Node Node;
 typedef enum
 {
     TYPE_PRIMITIVE__INVALID,
+    TYPE_PRIMITIVE__UNRESOLVED,
+
     TYPE_PRIMITIVE__NUMBER,
     TYPE_PRIMITIVE__BOOL,
     TYPE_PRIMITIVE__NODE

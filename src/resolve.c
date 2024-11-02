@@ -69,8 +69,9 @@ void resolve(Program *program)
                 }
             }
 
-            if (property->type.primitive == TYPE_PRIMITIVE__INVALID)
+            if (property->type.primitive == TYPE_PRIMITIVE__UNRESOLVED)
             {
+                property->type.primitive = TYPE_PRIMITIVE__INVALID;
                 fprintf(stderr, "Type '%.*s' of '%.*s' property does not exist.", property->type_name.len, property->type_name.str, property->name.len, property->name.str);
                 exit(EXIT_FAILURE);
             }
@@ -111,8 +112,9 @@ void resolve(Program *program)
                 }
             }
 
-            if (!placeholder->type.node)
+            if (placeholder->type.primitive == TYPE_PRIMITIVE__UNRESOLVED)
             {
+                placeholder->type.primitive = TYPE_PRIMITIVE__INVALID;
                 fprintf(stderr, "Could not find node with name %.*s", placeholder->type_name.len, placeholder->type_name.str);
                 exit(EXIT_FAILURE);
             }

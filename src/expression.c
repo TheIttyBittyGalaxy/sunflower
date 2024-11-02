@@ -103,6 +103,9 @@ const char *type_primitive_string(TypePrimitive primitive)
 {
     if (primitive == TYPE_PRIMITIVE__INVALID)
         return "INVALID";
+    if (primitive == TYPE_PRIMITIVE__UNRESOLVED)
+        return "UNRESOLVED";
+
     if (primitive == TYPE_PRIMITIVE__NUMBER)
         return "NUM";
     if (primitive == TYPE_PRIMITIVE__BOOL)
