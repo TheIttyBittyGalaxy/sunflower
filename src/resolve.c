@@ -146,14 +146,27 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
     {
         if (expr->op == OPERATION__INDEX)
         {
-            // TODO: Resolve index operations correctly! Right now we just assume the index is a totally valid shallow index
+            // TODO: Currently we only support shallow indexing of a placeholder value. Support nested indexing.
+
             expr->lhs = resolve_expression(program, rule, expr->lhs);
+            if (expr->lhs->variant != EXPR_VARIANT__PLACEHOLDER)
+            {
+                fprintf(stderr, "Internal error: Indexing expressions which are not placeholders is not yet supported.\n");
+                print_expression(expr);
+                exit(EXIT_FAILURE);
+            }
+
+            if (expr->rhs->variant != EXPR_VARIANT__UNRESOLVED_NAME)
+            {
+                fprintf(stderr, "Index into placeholder is invalid.\n");
+                print_expression(expr);
+                exit(EXIT_FAILURE);
+            }
             expr->rhs->variant = EXPR_VARIANT__PROPERTY_NAME;
 
             Placeholder *placeholder = expr->lhs->placeholder;
             Node *node = placeholder->node_type;
             sub_string field_name = expr->rhs->name;
-
             for (size_t i = 0; i < node->properties_count; i++)
             {
                 Property *property = node->properties + i;
@@ -172,8 +185,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             switch (expr->op)
             {
 
-            // TODO: Type check operands
-            // case OPERATION__INDEX:
+            // NOTE: OPERATION__INDEX is handled separately, see above
 
             // Both operands should be numbers
             case OPERATION__MUL:

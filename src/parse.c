@@ -106,7 +106,7 @@ void parse_node_declaration(Parser *parser)
     {
         Property *property = EXTEND_ARRAY(node->properties, Property);
         property->name = NULL_SUB_STRING;
-        property->type = TYPE_PRIMITIVE__INVALID;
+        property->type = TYPE_PRIMITIVE__INVALID; // TODO: For clarity, should we set this to "unresolved type"?
         property->type_name = NULL_SUB_STRING;
         property->node_type = NULL;
 
