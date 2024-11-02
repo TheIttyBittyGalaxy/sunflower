@@ -3,18 +3,18 @@
 #include "program.h"
 
 // Strings & printing
-const char *type_category_string(TypeCategory type_category)
+const char *type_category_string(TypePrimitive type_category)
 {
-    if (type_category == TYPE_NULL)
-        return "TYPE_NULL";
-    if (type_category == TYPE_NUM)
-        return "TYPE_NUM";
-    if (type_category == TYPE_BOOL)
-        return "TYPE_BOOL";
-    if (type_category == TYPE_NODE)
-        return "TYPE_NODE";
+    if (type_category == TYPE_PRIMITIVE__INVALID)
+        return "TYPE_PRIMITIVE__INVALID";
+    if (type_category == TYPE_PRIMITIVE__NUM)
+        return "TYPE_PRIMITIVE__NUM";
+    if (type_category == TYPE_PRIMITIVE__BOOL)
+        return "TYPE_PRIMITIVE__BOOL";
+    if (type_category == TYPE_PRIMITIVE__NODE)
+        return "TYPE_PRIMITIVE__NODE";
 
-    return "INVALID_TYPE_CATEGORY";
+    return "<INVALID TYPE_PRIMITIVE__CATEGORY>";
 }
 
 void print_program(const Program *program)
@@ -41,13 +41,13 @@ void print_node(const Node *node)
         Property p = node->properties[i];
         printf("%.*s: ", p.name.len, p.name.str);
 
-        if (p.type == TYPE_NULL)
-            printf("NULL (%.*s)", p.type_name.len, p.type_name.str);
-        else if (p.type == TYPE_NUM)
+        if (p.type == TYPE_PRIMITIVE__INVALID)
+            printf("INVALID TYPE (%.*s)", p.type_name.len, p.type_name.str);
+        else if (p.type == TYPE_PRIMITIVE__NUM)
             printf("NUM");
-        else if (p.type == TYPE_BOOL)
+        else if (p.type == TYPE_PRIMITIVE__BOOL)
             printf("BOOL");
-        else if (p.type == TYPE_NODE)
+        else if (p.type == TYPE_PRIMITIVE__NODE)
             printf("NODE %.*s (%.*s)", p.node_type->name.len, p.node_type->name.str, p.type_name.len, p.type_name.str);
         else
             printf("INVALID (%.*s)", p.type_name.len, p.type_name.str);

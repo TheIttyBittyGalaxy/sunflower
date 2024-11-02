@@ -7,68 +7,68 @@
 
 // Evaluate arc expression
 
-#define NUM_RESULT(result) ((Value){ \
-    .kind = NUM_VAL,                 \
+#define NUM_RESULT(result) ((ExprValue){ \
+    .type = TYPE_PRIMITIVE__NUM,         \
     .num = result})
 
-#define BOOL_RESULT(result) ((Value){ \
-    .kind = BOOL_VAL,                 \
+#define BOOL_RESULT(result) ((ExprValue){ \
+    .type = TYPE_PRIMITIVE__BOOL,         \
     .boolean = result})
 
-Value evaluate_arc_expression(Arc *arc, Expression *expr, Value *given_values)
+ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_values)
 {
 
-    switch (expr->kind)
+    switch (expr->variant)
     {
-    case NUMBER_LITERAL:
+    case EXPR_VARIANT__NUMBER_LITERAL:
         return NUM_RESULT(expr->number);
 
-    case BIN_OP:
+    case EXPR_VARIANT__BIN_OP:
     {
-        Value lhs = evaluate_arc_expression(arc, expr->lhs, given_values);
-        Value rhs = evaluate_arc_expression(arc, expr->rhs, given_values);
+        ExprValue lhs = evaluate_arc_expression(arc, expr->lhs, given_values);
+        ExprValue rhs = evaluate_arc_expression(arc, expr->rhs, given_values);
 
-        if (expr->op == MUL)
+        if (expr->op == OPERATION__MUL)
             return NUM_RESULT(lhs.num * rhs.num);
-        if (expr->op == DIV)
+        if (expr->op == OPERATION__DIV)
             return NUM_RESULT(lhs.num / rhs.num);
-        if (expr->op == ADD)
+        if (expr->op == OPERATION__ADD)
             return NUM_RESULT(lhs.num + rhs.num);
-        if (expr->op == SUB)
+        if (expr->op == OPERATION__SUB)
             return NUM_RESULT(lhs.num - rhs.num);
 
-        if (expr->op == LESS_THAN)
+        if (expr->op == OPERATION__LESS_THAN)
             return BOOL_RESULT(lhs.num < rhs.num);
-        if (expr->op == MORE_THAN)
+        if (expr->op == OPERATION__MORE_THAN)
             return BOOL_RESULT(lhs.num > rhs.num);
-        if (expr->op == LESS_THAN_OR_EQUAL)
+        if (expr->op == OPERATION__LESS_THAN_OR_EQUAL)
             return BOOL_RESULT(lhs.num <= rhs.num);
-        if (expr->op == MORE_THAN_OR_EQUAL)
+        if (expr->op == OPERATION__MORE_THAN_OR_EQUAL)
             return BOOL_RESULT(lhs.num <= rhs.num);
 
-        if (expr->op == EQUAL_TO)
-            return BOOL_RESULT(lhs.kind == rhs.kind && lhs.num == rhs.num); // FIXME: Using `num` regardless of the kind is probably error prone?
-        if (expr->op == NOT_EQUAL_TO)
-            return BOOL_RESULT(lhs.kind != rhs.kind || lhs.num != rhs.num); // FIXME: Using `num` regardless of the kind is probably error prone?
+        if (expr->op == OPERATION__EQUAL_TO)
+            return BOOL_RESULT(lhs.type == rhs.type && lhs.num == rhs.num); // FIXME: Using `num` regardless of the type is probably error prone?
+        if (expr->op == OPERATION__NOT_EQUAL_TO)
+            return BOOL_RESULT(lhs.type != rhs.type || lhs.num != rhs.num); // FIXME: Using `num` regardless of the type is probably error prone?
 
-        if (expr->op == LOGICAL_AND)
+        if (expr->op == OPERATION__LOGICAL_AND)
             return BOOL_RESULT(lhs.boolean && rhs.boolean);
-        if (expr->op == LOGICAL_OR)
+        if (expr->op == OPERATION__LOGICAL_OR)
             return BOOL_RESULT(lhs.boolean || rhs.boolean);
 
         fprintf(stderr, "Unable to evaluate %s binary operation", operation_string(expr->op));
         exit(EXIT_FAILURE);
     }
 
-    case ARC_VALUE:
+    case EXPR_VARIANT__VARIABLE_REFERENCE_INDEX:
     {
-        size_t index = (expr->index + arc->expr_rotation) % arc->variable_indexes_count;
+        size_t index = (expr->variable_reference_index + arc->expr_rotation) % arc->variable_indexes_count;
         return given_values[index];
     }
 
     default:
     {
-        fprintf(stderr, "Unable to evaluate %s expression", expression_kind_string(expr->kind));
+        fprintf(stderr, "Unable to evaluate %s expression", expr_variant_string(expr->variant));
         print_expression(expr);
         exit(EXIT_FAILURE);
     }
@@ -81,8 +81,8 @@ Value evaluate_arc_expression(Arc *arc, Expression *expr, Value *given_values)
 // Apply arc constraints
 void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constraints)
 {
-    Value given_value;
-    given_value.kind = NUM_VAL; // TODO: This is temporary. Eventually not all variables will be numbers.
+    ExprValue given_value;
+    given_value.type = TYPE_PRIMITIVE__NUM; // TODO: This is temporary. Eventually not all variables will be numbers.
 
     for (size_t arc_index = 0; arc_index < constraints.single_arcs_count; arc_index++)
     {
@@ -122,9 +122,9 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
 #define primary_value (var_value[0]) // Access the first element of `var_values` as `primary_value`
 
     // Initialise array of expression values
-    Value expression_values[MAX_VARIABLES];
+    ExprValue expression_values[MAX_VARIABLES];
     for (size_t i = 0; i < MAX_VARIABLES; i++)
-        expression_values[i].kind = NUM_VAL; // TODO: This is temporary. Eventually not all variables will be numbers.
+        expression_values[i].type = TYPE_PRIMITIVE__NUM; // TODO: This is temporary. Eventually not all variables will be numbers.
 
     // Enforce each arc
     for (size_t arc_index = 0; arc_index < constraints.multi_arcs_count; arc_index++)
@@ -263,12 +263,12 @@ void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
 
             Property *property = node->properties + p;
 
-            if (property->type == TYPE_NUM)
+            if (property->type == TYPE_PRIMITIVE__NUM)
             {
                 quantum_map->variables[v] = UINT64_MAX;
             }
 
-            else if (property->type == TYPE_NODE)
+            else if (property->type == TYPE_PRIMITIVE__NODE)
             {
                 uint64_t bitfield = 0;
                 for (size_t k = 0; k < 64; k++)

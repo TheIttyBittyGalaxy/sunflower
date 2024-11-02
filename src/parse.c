@@ -106,7 +106,7 @@ void parse_node_declaration(Parser *parser)
     {
         Property *property = EXTEND_ARRAY(node->properties, Property);
         property->name = NULL_SUB_STRING;
-        property->type = TYPE_NULL;
+        property->type = TYPE_PRIMITIVE__INVALID;
         property->type_name = NULL_SUB_STRING;
         property->node_type = NULL;
 
@@ -173,7 +173,7 @@ Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
     {
         Token t = eat(parser, NAME);
         expr = NEW(Expression);
-        expr->kind = UNRESOLVED_NAME;
+        expr->variant = EXPR_VARIANT__UNRESOLVED_NAME;
         expr->name = t.str;
     }
 
@@ -188,7 +188,7 @@ Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
             num = num * 10 + ((int)(t.str.str[i]) - 48);
 
         expr = NEW(Expression);
-        expr->kind = NUMBER_LITERAL;
+        expr->variant = EXPR_VARIANT__NUMBER_LITERAL;
         expr->number = num;
     }
 
@@ -218,35 +218,35 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
     Token t = parser->tokens.values[parser->current_index];
 
     if (t.kind == DOT)
-        infix_op = INDEX;
+        infix_op = OPERATION__INDEX;
 
     else if (t.kind == STAR)
-        infix_op = MUL;
+        infix_op = OPERATION__MUL;
     else if (t.kind == SLASH)
-        infix_op = DIV;
+        infix_op = OPERATION__DIV;
     else if (t.kind == PLUS)
-        infix_op = ADD;
+        infix_op = OPERATION__ADD;
     else if (t.kind == MINUS)
-        infix_op = SUB;
+        infix_op = OPERATION__SUB;
 
     else if (t.kind == ARROW_L)
-        infix_op = LESS_THAN;
+        infix_op = OPERATION__LESS_THAN;
     else if (t.kind == ARROW_R)
-        infix_op = MORE_THAN;
+        infix_op = OPERATION__MORE_THAN;
     else if (t.kind == ARROW_L_EQUAL)
-        infix_op = LESS_THAN_OR_EQUAL;
+        infix_op = OPERATION__LESS_THAN_OR_EQUAL;
     else if (t.kind == ARROW_R_EQUAL)
-        infix_op = MORE_THAN_OR_EQUAL;
+        infix_op = OPERATION__MORE_THAN_OR_EQUAL;
 
     else if (t.kind == EQUAL_SIGN)
-        infix_op = EQUAL_TO;
+        infix_op = OPERATION__EQUAL_TO;
     else if (t.kind == EXCLAIM_EQUAL)
-        infix_op = NOT_EQUAL_TO;
+        infix_op = OPERATION__NOT_EQUAL_TO;
 
     else if (t.kind == KEY_AND)
-        infix_op = LOGICAL_AND;
+        infix_op = OPERATION__LOGICAL_AND;
     else if (t.kind == KEY_OR)
-        infix_op = LOGICAL_OR;
+        infix_op = OPERATION__LOGICAL_OR;
 
     else
         return lhs;
@@ -258,7 +258,7 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
         eat(parser, t.kind);
 
         Expression *expr = NEW(Expression);
-        expr->kind = BIN_OP;
+        expr->variant = EXPR_VARIANT__BIN_OP;
         expr->lhs = lhs;
         expr->op = infix_op;
         expr->rhs = parse_expression_prefix(parser, infix_op_precedence);

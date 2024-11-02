@@ -11,90 +11,81 @@
 typedef struct Placeholder Placeholder;
 typedef struct Node Node;
 
-// Type
+// TypePrimitive
 typedef enum
 {
-    TYPE_NULL,
-    TYPE_NUM,
-    TYPE_BOOL,
-    TYPE_NODE
-} TypeCategory;
+    TYPE_PRIMITIVE__INVALID,
+    TYPE_PRIMITIVE__NUM,
+    TYPE_PRIMITIVE__BOOL,
+    TYPE_PRIMITIVE__NODE
+} TypePrimitive;
 
+// ExprType
 typedef struct
 {
-    TypeCategory type;
-    Node *node_type;
-} TypeInfo;
+    TypePrimitive type;
+    Node *node;
+} ExprType;
 
-// ExpressionKind
-// CLEANUP: Prefix these with "EXPRESSION_KIND"
+// ExprVariant
 typedef enum
 {
-    UNRESOLVED_NAME,
-    PROPERTY_NAME,
-    NUMBER_LITERAL,
-    PLACEHOLDER,
-    BIN_OP,
+    EXPR_VARIANT__UNRESOLVED_NAME,
 
-    ARC_VALUE, // CLEANUP: Figure out a better name for this? "ARC_VALUE" implies "the value of the arc", which does't make sense!
-} ExpressionKind;
+    EXPR_VARIANT__PROPERTY_NAME,
+    EXPR_VARIANT__NUMBER_LITERAL,
+    EXPR_VARIANT__PLACEHOLDER,
+    EXPR_VARIANT__BIN_OP,
+
+    EXPR_VARIANT__VARIABLE_REFERENCE_INDEX,
+} ExprVariant;
 
 // Operation
-// CLEANUP: Prefix these with "OPERATION"
 typedef enum
 {
-    INDEX,
+    OPERATION__INDEX,
 
-    MUL,
-    DIV,
-    ADD,
-    SUB,
+    OPERATION__MUL,
+    OPERATION__DIV,
+    OPERATION__ADD,
+    OPERATION__SUB,
 
-    LESS_THAN,
-    MORE_THAN,
-    LESS_THAN_OR_EQUAL,
-    MORE_THAN_OR_EQUAL,
+    OPERATION__LESS_THAN,
+    OPERATION__MORE_THAN,
+    OPERATION__LESS_THAN_OR_EQUAL,
+    OPERATION__MORE_THAN_OR_EQUAL,
 
-    EQUAL_TO,
-    NOT_EQUAL_TO,
+    OPERATION__EQUAL_TO,
+    OPERATION__NOT_EQUAL_TO,
 
-    LOGICAL_AND,
-    LOGICAL_OR,
+    OPERATION__LOGICAL_AND,
+    OPERATION__LOGICAL_OR,
 } Operation;
 
-// ValueKind
-// CLEANUP: Figure out a clearer name for this than just "value" (there are lots of things in this project that are referred to as "values")
-// CLEANUP: Prefix these enums
-typedef enum
-{
-    NUM_VAL,
-    BOOL_VAL
-} ValueKind;
-
-// Value
-// CLEANUP: Figure out a clearer name for this than just "value" (there are lots of things in this project that are referred to as "values")
+// ExprValue
 typedef struct
 {
-    ValueKind kind;
+    TypePrimitive type;
     union
     {
         int num;
         bool boolean;
     };
-} Value;
+} ExprValue;
 
 // Expression
 typedef struct Expression Expression;
 
 struct Expression
 {
-    ExpressionKind kind;
+    ExprVariant variant;
     union
     {
         struct // UNRESOLVED_NAME / PROPERTY_NAME
         {
             sub_string name;
         };
+        // TODO: Generalise this to be a literal for any possible `ExprValue`
         struct // NUMBER_LITERAL
         {
             int number;
@@ -110,15 +101,15 @@ struct Expression
             Expression *rhs;
             size_t index_property_index;
         };
-        struct // ARC_VALUE
+        struct // VARIABLE_REFERENCE_INDEX
         {
-            size_t index;
+            size_t variable_reference_index;
         };
     };
 };
 
 // Types
-TypeInfo deduce_type_of(Expression *expr);
+ExprType deduce_type_of(Expression *expr);
 
 // Precedence
 typedef size_t Precedence;
@@ -126,9 +117,9 @@ static const size_t MIN_PRECEDENCE = SIZE_MAX;
 size_t precedence_of(Operation op);
 
 // Strings & printing
-const char *expression_kind_string(ExpressionKind kind);
+const char *type_primitive_string(TypePrimitive primitive);
+const char *expr_variant_string(ExprVariant variant);
 const char *operation_string(Operation operation);
-const char *value_kind_string(ValueKind kind);
 void print_expression(const Expression *expr);
 
 #endif

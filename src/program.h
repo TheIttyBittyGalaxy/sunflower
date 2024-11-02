@@ -15,7 +15,7 @@ typedef struct Node Node;
 struct Property
 {
     sub_string name;
-    TypeCategory type;
+    TypePrimitive type;
     sub_string type_name;
     Node *node_type;
 };
@@ -23,6 +23,7 @@ struct Property
 // Node
 // Node is declared differently here as it is forward declared in "expression.h"
 // CLEANUP: Is there a better way of doing this?
+// CLEANUP: Is there a better name for this struct than "Node"? Something slightly more specific/less abstract might be helpful?
 struct Node
 {
     sub_string name;
@@ -59,7 +60,7 @@ typedef struct
 } Program;
 
 // Strings & printing
-const char *type_category_string(TypeCategory type_category);
+const char *type_category_string(TypePrimitive type_category);
 void print_program(const Program *program);
 void print_node(const Node *node);
 void print_rule(const Rule *rule);

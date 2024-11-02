@@ -53,7 +53,7 @@ void resolve(Program *program)
             // Resolve the property's type
             if (property->type_name.len == 3 && (strncmp(property->type_name.str, "num", 3) == 0))
             {
-                property->type = TYPE_NUM;
+                property->type = TYPE_PRIMITIVE__NUM;
             }
             else
             {
@@ -62,14 +62,14 @@ void resolve(Program *program)
                     Node *node = program->nodes + j;
                     if (substrings_match(node->name, property->type_name))
                     {
-                        property->type = TYPE_NODE;
+                        property->type = TYPE_PRIMITIVE__NODE;
                         property->node_type = node;
                         break;
                     }
                 }
             }
 
-            if (property->type == TYPE_NULL)
+            if (property->type == TYPE_PRIMITIVE__INVALID)
             {
                 fprintf(stderr, "Type '%.*s' of '%.*s' property does not exist.", property->type_name.len, property->type_name.str, property->name.len, property->name.str);
                 exit(EXIT_FAILURE);
@@ -124,7 +124,7 @@ void resolve(Program *program)
 
 Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
 {
-    if (expr->kind == UNRESOLVED_NAME)
+    if (expr->variant == EXPR_VARIANT__UNRESOLVED_NAME)
     {
         sub_string unresolved_name = expr->name;
         for (size_t i = 0; i < rule->placeholders_count; i++)
@@ -132,7 +132,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             Placeholder *placeholder = rule->placeholders + i;
             if (substrings_match(unresolved_name, placeholder->name))
             {
-                expr->kind = PLACEHOLDER;
+                expr->variant = EXPR_VARIANT__PLACEHOLDER;
                 expr->placeholder = placeholder;
                 return expr;
             }
@@ -142,13 +142,13 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
         exit(EXIT_FAILURE);
     }
 
-    if (expr->kind == BIN_OP)
+    if (expr->variant == EXPR_VARIANT__BIN_OP)
     {
-        if (expr->op == INDEX)
+        if (expr->op == OPERATION__INDEX)
         {
             // TODO: Resolve index operations correctly! Right now we just assume the index is a totally valid shallow index
             expr->lhs = resolve_expression(program, rule, expr->lhs);
-            expr->rhs->kind = PROPERTY_NAME;
+            expr->rhs->variant = EXPR_VARIANT__PROPERTY_NAME;
 
             Placeholder *placeholder = expr->lhs->placeholder;
             Node *node = placeholder->node_type;
@@ -173,27 +173,27 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             {
 
             // TODO: Type check operands
-            // case INDEX:
+            // case OPERATION__INDEX:
 
             // Both operands should be numbers
-            case MUL:
-            case DIV:
-            case ADD:
-            case SUB:
+            case OPERATION__MUL:
+            case OPERATION__DIV:
+            case OPERATION__ADD:
+            case OPERATION__SUB:
 
-            case LESS_THAN:
-            case MORE_THAN:
-            case LESS_THAN_OR_EQUAL:
-            case MORE_THAN_OR_EQUAL:
+            case OPERATION__LESS_THAN:
+            case OPERATION__MORE_THAN:
+            case OPERATION__LESS_THAN_OR_EQUAL:
+            case OPERATION__MORE_THAN_OR_EQUAL:
             {
-                if (deduce_type_of(expr->lhs).type != TYPE_NUM)
+                if (deduce_type_of(expr->lhs).type != TYPE_PRIMITIVE__NUM)
                 {
                     fprintf(stderr, "Expression is not a number.\n");
                     print_expression(expr->lhs);
                     exit(EXIT_FAILURE);
                 }
 
-                if (deduce_type_of(expr->rhs).type != TYPE_NUM)
+                if (deduce_type_of(expr->rhs).type != TYPE_PRIMITIVE__NUM)
                 {
                     fprintf(stderr, "Expression is not a number.\n");
                     print_expression(expr->rhs);
@@ -203,15 +203,15 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
                 break;
             }
 
-            case EQUAL_TO:
-            case NOT_EQUAL_TO:
+            case OPERATION__EQUAL_TO:
+            case OPERATION__NOT_EQUAL_TO:
             {
-                TypeInfo lht = deduce_type_of(expr->lhs);
-                TypeInfo rht = deduce_type_of(expr->rhs);
+                ExprType lht = deduce_type_of(expr->lhs);
+                ExprType rht = deduce_type_of(expr->rhs);
 
                 if (
                     (lht.type != rht.type) ||
-                    (lht.type == TYPE_NODE && rht.type == TYPE_NODE && lht.node_type == rht.node_type))
+                    (lht.type == TYPE_PRIMITIVE__NODE && rht.type == TYPE_PRIMITIVE__NODE && lht.node == rht.node))
                 {
                     fprintf(stderr, "LHS and RHS of comparison will never be the same.\n");
                     print_expression(expr);
@@ -223,17 +223,17 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
 
             // Both operands should be booleans
             // TODO: We should also allow any value which could be NULL
-            case LOGICAL_AND:
-            case LOGICAL_OR:
+            case OPERATION__LOGICAL_AND:
+            case OPERATION__LOGICAL_OR:
             {
-                if (deduce_type_of(expr->lhs).type != TYPE_BOOL)
+                if (deduce_type_of(expr->lhs).type != TYPE_PRIMITIVE__BOOL)
                 {
                     fprintf(stderr, "Expression is not a boolean.\n");
                     print_expression(expr->lhs);
                     exit(EXIT_FAILURE);
                 }
 
-                if (deduce_type_of(expr->rhs).type != TYPE_BOOL)
+                if (deduce_type_of(expr->rhs).type != TYPE_PRIMITIVE__BOOL)
                 {
                     fprintf(stderr, "Expression is not a boolean.\n");
                     print_expression(expr->rhs);

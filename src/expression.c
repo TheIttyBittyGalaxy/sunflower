@@ -4,48 +4,48 @@
 #include "program.h"
 
 // Types
-TypeInfo deduce_type_of(Expression *expr)
+ExprType deduce_type_of(Expression *expr)
 {
-    switch (expr->kind)
+    switch (expr->variant)
     {
-    case NUMBER_LITERAL:
-        return (TypeInfo){.type = TYPE_NUM, .node_type = NULL};
+    case EXPR_VARIANT__NUMBER_LITERAL:
+        return (ExprType){.type = TYPE_PRIMITIVE__NUM, .node = NULL};
 
-    case PLACEHOLDER:
-        return (TypeInfo){.type = TYPE_NODE, .node_type = expr->placeholder->node_type};
+    case EXPR_VARIANT__PLACEHOLDER:
+        return (ExprType){.type = TYPE_PRIMITIVE__NODE, .node = expr->placeholder->node_type};
 
-    case BIN_OP:
+    case EXPR_VARIANT__BIN_OP:
     {
         switch (expr->op)
         {
-        case INDEX:
+        case OPERATION__INDEX:
         {
             Node *node = expr->lhs->placeholder->node_type;
             Property *property = node->properties + expr->index_property_index;
-            return (TypeInfo){.type = property->type, .node_type = property->node_type};
+            return (ExprType){.type = property->type, .node = property->node_type};
         }
 
-        case MUL:
-        case DIV:
-        case ADD:
-        case SUB:
-            return (TypeInfo){.type = TYPE_NUM, .node_type = NULL};
+        case OPERATION__MUL:
+        case OPERATION__DIV:
+        case OPERATION__ADD:
+        case OPERATION__SUB:
+            return (ExprType){.type = TYPE_PRIMITIVE__NUM, .node = NULL};
 
-        case LESS_THAN:
-        case MORE_THAN:
-        case LESS_THAN_OR_EQUAL:
-        case MORE_THAN_OR_EQUAL:
-        case EQUAL_TO:
-        case NOT_EQUAL_TO:
-        case LOGICAL_AND:
-        case LOGICAL_OR:
-            return (TypeInfo){.type = TYPE_BOOL, .node_type = NULL};
+        case OPERATION__LESS_THAN:
+        case OPERATION__MORE_THAN:
+        case OPERATION__LESS_THAN_OR_EQUAL:
+        case OPERATION__MORE_THAN_OR_EQUAL:
+        case OPERATION__EQUAL_TO:
+        case OPERATION__NOT_EQUAL_TO:
+        case OPERATION__LOGICAL_AND:
+        case OPERATION__LOGICAL_OR:
+            return (ExprType){.type = TYPE_PRIMITIVE__BOOL, .node = NULL};
         }
     }
 
     default:
     {
-        fprintf(stderr, "Internal error: Could not deduce type of %s Expression\n", expression_kind_string(expr->kind));
+        fprintf(stderr, "Internal error: Could not deduce type of %s Expression\n", expr_variant_string(expr->variant));
         print_expression(expr);
         exit(EXIT_FAILURE);
     }
@@ -57,29 +57,29 @@ size_t precedence_of(Operation op)
 {
     switch (op)
     {
-    case INDEX:
+    case OPERATION__INDEX:
         return 1;
 
-    case MUL:
-    case DIV:
+    case OPERATION__MUL:
+    case OPERATION__DIV:
         return 2;
 
-    case ADD:
-    case SUB:
+    case OPERATION__ADD:
+    case OPERATION__SUB:
         return 3;
 
-    case LESS_THAN:
-    case MORE_THAN:
-    case LESS_THAN_OR_EQUAL:
-    case MORE_THAN_OR_EQUAL:
+    case OPERATION__LESS_THAN:
+    case OPERATION__MORE_THAN:
+    case OPERATION__LESS_THAN_OR_EQUAL:
+    case OPERATION__MORE_THAN_OR_EQUAL:
         return 4;
 
-    case EQUAL_TO:
-    case NOT_EQUAL_TO:
+    case OPERATION__EQUAL_TO:
+    case OPERATION__NOT_EQUAL_TO:
         return 5;
 
-    case LOGICAL_AND:
-    case LOGICAL_OR:
+    case OPERATION__LOGICAL_AND:
+    case OPERATION__LOGICAL_OR:
         return 6;
 
     default:
@@ -91,100 +91,105 @@ size_t precedence_of(Operation op)
 }
 
 // Strings & printing
-const char *expression_kind_string(ExpressionKind kind)
+const char *type_primitive_string(TypePrimitive primitive)
 {
-    if (kind == UNRESOLVED_NAME)
+    if (primitive == TYPE_PRIMITIVE__INVALID)
+        return "INVALID";
+    if (primitive == TYPE_PRIMITIVE__NUM)
+        return "NUM";
+    if (primitive == TYPE_PRIMITIVE__BOOL)
+        return "BOOL";
+    if (primitive == TYPE_PRIMITIVE__NODE)
+        return "NODE";
+
+    return "<INVALID TYPE_PRIMITIVE>";
+}
+
+const char *expr_variant_string(ExprVariant variant)
+{
+    if (variant == EXPR_VARIANT__UNRESOLVED_NAME)
         return "UNRESOLVED_NAME";
-    if (kind == PROPERTY_NAME)
+
+    if (variant == EXPR_VARIANT__PROPERTY_NAME)
         return "PROPERTY_NAME";
-    if (kind == NUMBER_LITERAL)
+    if (variant == EXPR_VARIANT__NUMBER_LITERAL)
         return "NUMBER_LITERAL";
-    if (kind == PLACEHOLDER)
+    if (variant == EXPR_VARIANT__PLACEHOLDER)
         return "PLACEHOLDER";
-    if (kind == BIN_OP)
+    if (variant == EXPR_VARIANT__BIN_OP)
         return "BIN_OP";
 
-    if (kind == ARC_VALUE)
-        return "ARC_VALUE";
+    if (variant == EXPR_VARIANT__VARIABLE_REFERENCE_INDEX)
+        return "VARIABLE_REFERENCE_OPERATION__INDEX";
 
-    return "INVALID_EXPRESSION_KIND";
+    return "<INVALID EXPR_VARIANT>";
 }
 
 const char *operation_string(Operation operation)
 {
-    if (operation == INDEX)
+    if (operation == OPERATION__INDEX)
         return "INDEX";
 
-    if (operation == MUL)
+    if (operation == OPERATION__MUL)
         return "MUL";
-    if (operation == DIV)
+    if (operation == OPERATION__DIV)
         return "DIV";
-    if (operation == ADD)
+    if (operation == OPERATION__ADD)
         return "ADD";
-    if (operation == SUB)
+    if (operation == OPERATION__SUB)
         return "SUB";
 
-    if (operation == LESS_THAN)
+    if (operation == OPERATION__LESS_THAN)
         return "LESS_THAN";
-    if (operation == MORE_THAN)
+    if (operation == OPERATION__MORE_THAN)
         return "MORE_THAN";
-    if (operation == LESS_THAN_OR_EQUAL)
+    if (operation == OPERATION__LESS_THAN_OR_EQUAL)
         return "LESS_THAN_OR_EQUAL";
-    if (operation == MORE_THAN_OR_EQUAL)
+    if (operation == OPERATION__MORE_THAN_OR_EQUAL)
         return "MORE_THAN_OR_EQUAL";
 
-    if (operation == EQUAL_TO)
+    if (operation == OPERATION__EQUAL_TO)
         return "EQUAL_TO";
-    if (operation == NOT_EQUAL_TO)
+    if (operation == OPERATION__NOT_EQUAL_TO)
         return "NOT_EQUAL_TO";
 
-    if (operation == LOGICAL_AND)
+    if (operation == OPERATION__LOGICAL_AND)
         return "LOGICAL_AND";
-    if (operation == LOGICAL_OR)
+    if (operation == OPERATION__LOGICAL_OR)
         return "LOGICAL_OR";
 
-    return "INVALID_OPERATION";
-}
-
-const char *value_kind_string(ValueKind kind)
-{
-    if (kind == NUM_VAL)
-        return "NUM_VAL";
-    if (kind == BOOL_VAL)
-        return "BOOL_VAL";
-
-    return "INVALID_VALUE_KIND";
+    return "<INVALID OPERATION>";
 }
 
 void print_expression(const Expression *expr)
 {
-    switch (expr->kind)
+    switch (expr->variant)
     {
-    case UNRESOLVED_NAME:
+    case EXPR_VARIANT__UNRESOLVED_NAME:
     {
         printf("%.*s?", expr->name.len, expr->name.str);
         break;
     }
 
-    case PROPERTY_NAME:
+    case EXPR_VARIANT__PROPERTY_NAME:
     {
         printf("%.*s", expr->name.len, expr->name.str);
         break;
     }
 
-    case NUMBER_LITERAL:
+    case EXPR_VARIANT__NUMBER_LITERAL:
     {
         printf("%d", expr->number);
         break;
     }
 
-    case PLACEHOLDER:
+    case EXPR_VARIANT__PLACEHOLDER:
     {
         printf("!%.*s", expr->placeholder->name.len, expr->placeholder->name.str);
         break;
     }
 
-    case BIN_OP:
+    case EXPR_VARIANT__BIN_OP:
     {
         const char *op = (const char *[]){".", "*", "/", "+", "-", "<", ">", "≤", "≥", "=", "≠", "AND", "OR"}[expr->op];
         if (precedence_of(expr->op) == 1)
@@ -204,15 +209,15 @@ void print_expression(const Expression *expr)
         break;
     }
 
-    case ARC_VALUE:
+    case EXPR_VARIANT__VARIABLE_REFERENCE_INDEX:
     {
-        printf("[%d]", expr->index);
+        printf("[%d]", expr->variable_reference_index);
         break;
     }
 
     default:
     {
-        fprintf(stderr, "Internal error: Could print %s Expression", expression_kind_string(expr->kind));
+        fprintf(stderr, "Internal error: Could print %s Expression", expr_variant_string(expr->variant));
         exit(EXIT_FAILURE);
     }
     }
