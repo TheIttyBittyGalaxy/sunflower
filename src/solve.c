@@ -6,55 +6,57 @@
 #include "solve.h"
 
 // Evaluate arc expression
-
-#define NUM_RESULT(result) ((ExprValue){      \
-    .type_primitive = TYPE_PRIMITIVE__NUMBER, \
-    .number = result})
-
-#define BOOL_RESULT(result) ((ExprValue){   \
-    .type_primitive = TYPE_PRIMITIVE__BOOL, \
-    .boolean = result})
-
-ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_values)
+int evaluate_arc_expression(Arc *arc, Expression *expr, int *variable_values)
 {
 
     switch (expr->variant)
     {
+
+        // TODO: There's no need to convert from a ExprValue to an int every time - do this ahead of time!
     case EXPR_VARIANT__LITERAL:
-        return NUM_RESULT(expr->literal_value.number);
+    {
+        if (expr->literal_value.type_primitive == TYPE_PRIMITIVE__NUMBER)
+            return expr->literal_value.number;
+        if (expr->literal_value.type_primitive == TYPE_PRIMITIVE__BOOL)
+            return expr->literal_value.boolean ? 1 : 0;
+
+        fprintf(stderr, "Unable to evaluate expression literal\n");
+        print_expression(expr);
+        exit(EXIT_FAILURE);
+    }
 
     case EXPR_VARIANT__BIN_OP:
     {
-        ExprValue lhs = evaluate_arc_expression(arc, expr->lhs, given_values);
-        ExprValue rhs = evaluate_arc_expression(arc, expr->rhs, given_values);
+        int rhs = evaluate_arc_expression(arc, expr->rhs, variable_values);
+        int lhs = evaluate_arc_expression(arc, expr->lhs, variable_values);
 
         if (expr->op == OPERATION__MUL)
-            return NUM_RESULT(lhs.number * rhs.number);
+            return lhs * rhs;
         if (expr->op == OPERATION__DIV)
-            return NUM_RESULT(lhs.number / rhs.number);
+            return lhs / rhs;
         if (expr->op == OPERATION__ADD)
-            return NUM_RESULT(lhs.number + rhs.number);
+            return lhs + rhs;
         if (expr->op == OPERATION__SUB)
-            return NUM_RESULT(lhs.number - rhs.number);
+            return lhs - rhs;
 
         if (expr->op == OPERATION__LESS_THAN)
-            return BOOL_RESULT(lhs.number < rhs.number);
+            return lhs < rhs;
         if (expr->op == OPERATION__MORE_THAN)
-            return BOOL_RESULT(lhs.number > rhs.number);
+            return lhs > rhs;
         if (expr->op == OPERATION__LESS_THAN_OR_EQUAL)
-            return BOOL_RESULT(lhs.number <= rhs.number);
+            return lhs <= rhs;
         if (expr->op == OPERATION__MORE_THAN_OR_EQUAL)
-            return BOOL_RESULT(lhs.number <= rhs.number);
+            return lhs <= rhs;
 
         if (expr->op == OPERATION__EQUAL_TO)
-            return BOOL_RESULT(lhs.type_primitive == rhs.type_primitive && lhs.number == rhs.number); // FIXME: Using `number` regardless of the type is probably error prone?
+            return lhs == rhs;
         if (expr->op == OPERATION__NOT_EQUAL_TO)
-            return BOOL_RESULT(lhs.type_primitive != rhs.type_primitive || lhs.number != rhs.number); // FIXME: Using `number` regardless of the type is probably error prone?
+            return lhs != rhs;
 
         if (expr->op == OPERATION__LOGICAL_AND)
-            return BOOL_RESULT(lhs.boolean && rhs.boolean);
+            return lhs && rhs;
         if (expr->op == OPERATION__LOGICAL_OR)
-            return BOOL_RESULT(lhs.boolean || rhs.boolean);
+            return lhs || rhs;
 
         fprintf(stderr, "Unable to evaluate %s binary operation\n", operation_string(expr->op));
         print_expression(expr);
@@ -64,7 +66,7 @@ ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_v
     case EXPR_VARIANT__VARIABLE_REFERENCE_INDEX:
     {
         size_t index = (expr->variable_reference_index + arc->expr_rotation) % arc->variable_indexes_count;
-        return given_values[index];
+        return variable_values[index];
     }
 
     default:
@@ -74,17 +76,11 @@ ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_v
         exit(EXIT_FAILURE);
     }
     }
-
-#undef BOOL_RESULT
-#undef NUM_RESULT
 }
 
 // Apply arc constraints
 void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constraints)
 {
-    ExprValue given_value;
-    given_value.type_primitive = TYPE_PRIMITIVE__NUMBER; // TODO: This is temporary. Eventually not all variables will be numbers.
-
     for (size_t arc_index = 0; arc_index < constraints.single_arcs_count; arc_index++)
     {
         Arc *arc = constraints.single_arcs + arc_index;
@@ -98,10 +94,9 @@ void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constrai
             if (!(var_bitfield & value_bitfield))
                 continue;
 
-            given_value.number = value; // TODO: This is temporary. Eventually not all variables will be numbers.
-            bool result = evaluate_arc_expression(arc, arc->expr, &given_value).boolean;
+            int result = evaluate_arc_expression(arc, arc->expr, &value);
 
-            if (!result)
+            if (result == 0)
                 var_bitfield -= value_bitfield;
         }
 
@@ -121,11 +116,6 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
     // Initialise array of possible values for each variable
     int var_value[MAX_VARIABLES];
 #define primary_value (var_value[0]) // Access the first element of `var_values` as `primary_value`
-
-    // Initialise array of expression values
-    ExprValue expression_values[MAX_VARIABLES];
-    for (size_t i = 0; i < MAX_VARIABLES; i++)
-        expression_values[i].type_primitive = TYPE_PRIMITIVE__NUMBER; // TODO: This is temporary. Eventually not all variables will be numbers.
 
     // Enforce each arc
     for (size_t arc_index = 0; arc_index < constraints.multi_arcs_count; arc_index++)
@@ -210,11 +200,9 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
                 }
 
                 // Evaluate the set of possible variables to determine if the primary value is a valid possibility
-                for (size_t v = 0; v < total_variables; v++)
-                    expression_values[v].number = var_value[v]; // TODO: This is temporary. Eventually not all variables will be numbers.
-                bool result = evaluate_arc_expression(arc, arc->expr, expression_values).boolean;
+                int result = evaluate_arc_expression(arc, arc->expr, var_value);
 
-                if (result)
+                if (result != 0)
                 {
                     primary_value_is_valid_possibility = true;
                     break;
