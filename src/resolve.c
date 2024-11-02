@@ -152,9 +152,89 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
         }
         else
         {
-            // TODO: Type check operands
             expr->lhs = resolve_expression(program, rule, expr->lhs);
             expr->rhs = resolve_expression(program, rule, expr->rhs);
+
+            switch (expr->op)
+            {
+
+            // TODO: Type check operands
+            // case INDEX:
+
+            // Both operands should be numbers
+            case MUL:
+            case DIV:
+            case ADD:
+            case SUB:
+
+            case LESS_THAN:
+            case MORE_THAN:
+            case LESS_THAN_OR_EQUAL:
+            case MORE_THAN_OR_EQUAL:
+            {
+                if (deduce_type_of(expr->lhs).type != TYPE_NUM)
+                {
+                    fprintf(stderr, "Expression is not a number.\n");
+                    print_expression(expr->lhs);
+                    exit(EXIT_FAILURE);
+                }
+
+                if (deduce_type_of(expr->rhs).type != TYPE_NUM)
+                {
+                    fprintf(stderr, "Expression is not a number.\n");
+                    print_expression(expr->rhs);
+                    exit(EXIT_FAILURE);
+                }
+
+                break;
+            }
+
+            case EQUAL_TO:
+            case NOT_EQUAL_TO:
+            {
+                TypeInfo lht = deduce_type_of(expr->lhs);
+                TypeInfo rht = deduce_type_of(expr->rhs);
+
+                if (
+                    (lht.type != rht.type) ||
+                    (lht.type == TYPE_NODE && rht.type == TYPE_NODE && lht.node_type == rht.node_type))
+                {
+                    fprintf(stderr, "LHS and RHS of comparison will never be the same.\n");
+                    print_expression(expr);
+                    exit(EXIT_FAILURE);
+                }
+
+                break;
+            }
+
+            // Both operands should be booleans
+            // TODO: We should also allow any value which could be NULL
+            case LOGICAL_AND:
+            case LOGICAL_OR:
+            {
+                if (deduce_type_of(expr->lhs).type != TYPE_BOOL)
+                {
+                    fprintf(stderr, "Expression is not a boolean.\n");
+                    print_expression(expr->lhs);
+                    exit(EXIT_FAILURE);
+                }
+
+                if (deduce_type_of(expr->rhs).type != TYPE_BOOL)
+                {
+                    fprintf(stderr, "Expression is not a boolean.\n");
+                    print_expression(expr->rhs);
+                    exit(EXIT_FAILURE);
+                }
+
+                break;
+            }
+
+            default:
+            {
+                fprintf(stderr, "Internal error: Cannot resolve %s binary operation", operation_string(expr->op));
+                exit(EXIT_FAILURE);
+            }
+            }
         }
     }
 

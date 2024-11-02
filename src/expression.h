@@ -6,6 +6,26 @@
 
 #include "sub_string.h"
 
+// Forward declarations for Program nodes
+// (We cannot include "program.h" as this would create a cyclic include)
+typedef struct Placeholder Placeholder;
+typedef struct Node Node;
+
+// Type
+typedef enum
+{
+    TYPE_NULL,
+    TYPE_NUM,
+    TYPE_BOOL,
+    TYPE_NODE
+} TypeCategory;
+
+typedef struct
+{
+    TypeCategory type;
+    Node *node_type;
+} TypeInfo;
+
 // ExpressionKind
 // CLEANUP: Prefix these with "EXPRESSION_KIND"
 typedef enum
@@ -63,10 +83,6 @@ typedef struct
     };
 } Value;
 
-// Forward declarations for Program nodes
-// (We cannot include "program.h" as this would create a cyclic include)
-typedef struct Placeholder Placeholder;
-
 // Expression
 typedef struct Expression Expression;
 
@@ -99,6 +115,9 @@ struct Expression
         };
     };
 };
+
+// Types
+TypeInfo deduce_type_of(Expression *expr);
 
 // Precedence
 typedef size_t Precedence;

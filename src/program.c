@@ -9,6 +9,8 @@ const char *type_category_string(TypeCategory type_category)
         return "TYPE_NULL";
     if (type_category == TYPE_NUM)
         return "TYPE_NUM";
+    if (type_category == TYPE_BOOL)
+        return "TYPE_BOOL";
     if (type_category == TYPE_NODE)
         return "TYPE_NODE";
 
@@ -43,6 +45,8 @@ void print_node(const Node *node)
             printf("NULL (%.*s)", p.type_name.len, p.type_name.str);
         else if (p.type == TYPE_NUM)
             printf("NUM");
+        else if (p.type == TYPE_BOOL)
+            printf("BOOL");
         else if (p.type == TYPE_NODE)
             printf("NODE %.*s (%.*s)", p.node_type->name.len, p.node_type->name.str, p.type_name.len, p.type_name.str);
         else

@@ -3,6 +3,71 @@
 #include "expression.h"
 #include "program.h"
 
+// Types
+TypeInfo deduce_type_of(Expression *expr)
+{
+    switch (expr->kind)
+    {
+    case NUMBER_LITERAL:
+        return (TypeInfo){.type = TYPE_NUM, .node_type = NULL};
+
+    case PLACEHOLDER:
+        return (TypeInfo){.type = TYPE_NODE, .node_type = expr->placeholder->node_type};
+
+    case BIN_OP:
+    {
+        switch (expr->op)
+        {
+        case INDEX:
+        {
+            Node *node = expr->lhs->placeholder->node_type;
+            sub_string field_name = expr->rhs->name;
+            Property *property = NULL;
+
+            for (size_t i = 0; i < node->properties_count; i++)
+            {
+                property = node->properties + i;
+                if (substrings_match(field_name, property->name))
+                    break;
+            }
+
+            if (!property)
+            {
+                fprintf(stderr, "Internal error: Could not deduce type of INDEX Expression - Could not find the property of the corresponding node type\n");
+                print_expression(expr);
+                exit(EXIT_FAILURE);
+            }
+
+            return (TypeInfo){.type = property->type, .node_type = property->node_type};
+        }
+
+        case MUL:
+        case DIV:
+        case ADD:
+        case SUB:
+            return (TypeInfo){.type = TYPE_NUM, .node_type = NULL};
+
+        case LESS_THAN:
+        case MORE_THAN:
+        case LESS_THAN_OR_EQUAL:
+        case MORE_THAN_OR_EQUAL:
+        case EQUAL_TO:
+        case NOT_EQUAL_TO:
+        case LOGICAL_AND:
+        case LOGICAL_OR:
+            return (TypeInfo){.type = TYPE_BOOL, .node_type = NULL};
+        }
+    }
+
+    default:
+    {
+        fprintf(stderr, "Internal error: Could not deduce type of %s Expression\n", expression_kind_string(expr->kind));
+        print_expression(expr);
+        exit(EXIT_FAILURE);
+    }
+    }
+}
+
 // Precedence
 size_t precedence_of(Operation op)
 {

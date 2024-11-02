@@ -7,14 +7,6 @@
 #include "expression.h"
 #include "sub_string.h"
 
-// Type
-typedef enum
-{
-    TYPE_NULL,
-    TYPE_NUM,
-    TYPE_NODE
-} TypeCategory;
-
 // Forward declarations
 typedef struct Property Property;
 typedef struct Node Node;
@@ -29,6 +21,8 @@ struct Property
 };
 
 // Node
+// Node is declared differently here as it is forward declared in "expression.h"
+// CLEANUP: Is there a better way of doing this?
 struct Node
 {
     sub_string name;
