@@ -18,11 +18,11 @@ ExprType deduce_type_of(Expression *expr)
     {
         switch (expr->op)
         {
-        case OPERATION__INDEX:
+        case OPERATION__ACCESS:
         {
-            Node *node = expr->lhs->placeholder->node_type;
-            Property *property = node->properties + expr->index_property_index;
-            return (ExprType){.type = property->type, .node = property->node_type};
+            fprintf(stderr, "Internal error: Attempt to get type of unresolved INDEX BIN_OP\n");
+            print_expression(expr);
+            exit(EXIT_FAILURE);
         }
 
         case OPERATION__MUL:
@@ -43,6 +43,13 @@ ExprType deduce_type_of(Expression *expr)
         }
     }
 
+    case EXPR_VARIANT__PROPERTY_ACCESS:
+    {
+        Node *node = expr->subject->placeholder->node_type;
+        Property *property = node->properties + expr->property_offset;
+        return (ExprType){.type = property->type, .node = property->node_type};
+    }
+
     default:
     {
         fprintf(stderr, "Internal error: Could not deduce type of %s Expression\n", expr_variant_string(expr->variant));
@@ -57,7 +64,7 @@ size_t precedence_of(Operation op)
 {
     switch (op)
     {
-    case OPERATION__INDEX:
+    case OPERATION__ACCESS:
         return 1;
 
     case OPERATION__MUL:
@@ -85,6 +92,7 @@ size_t precedence_of(Operation op)
     default:
     {
         fprintf(stderr, "Internal error: Could not determine precedence of %s operation", operation_string(op));
+
         exit(EXIT_FAILURE);
     }
     }
@@ -110,25 +118,25 @@ const char *expr_variant_string(ExprVariant variant)
     if (variant == EXPR_VARIANT__UNRESOLVED_NAME)
         return "UNRESOLVED_NAME";
 
-    if (variant == EXPR_VARIANT__PROPERTY_NAME)
-        return "PROPERTY_NAME";
     if (variant == EXPR_VARIANT__LITERAL)
         return "LITERAL";
     if (variant == EXPR_VARIANT__PLACEHOLDER)
         return "PLACEHOLDER";
     if (variant == EXPR_VARIANT__BIN_OP)
         return "BIN_OP";
+    if (variant == EXPR_VARIANT__PROPERTY_ACCESS)
+        return "PROPERTY_ACCESS";
 
     if (variant == EXPR_VARIANT__VARIABLE_REFERENCE_INDEX)
-        return "VARIABLE_REFERENCE_OPERATION__INDEX";
+        return "VARIABLE_REFERENCE_INDEX";
 
     return "<INVALID EXPR_VARIANT>";
 }
 
 const char *operation_string(Operation operation)
 {
-    if (operation == OPERATION__INDEX)
-        return "INDEX";
+    if (operation == OPERATION__ACCESS)
+        return "ACCESS";
 
     if (operation == OPERATION__MUL)
         return "MUL";
@@ -185,12 +193,6 @@ void print_expression(const Expression *expr)
         break;
     }
 
-    case EXPR_VARIANT__PROPERTY_NAME:
-    {
-        printf("%.*s", expr->name.len, expr->name.str);
-        break;
-    }
-
     case EXPR_VARIANT__LITERAL:
     {
         print_expr_value(expr->literal_value);
@@ -220,6 +222,12 @@ void print_expression(const Expression *expr)
             print_expression(expr->rhs);
             putchar(')');
         }
+        break;
+    }
+
+    case EXPR_VARIANT__PROPERTY_ACCESS:
+    {
+        printf("@[%d:%d]", expr->placeholder_index, expr->property_offset);
         break;
     }
 

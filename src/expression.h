@@ -32,10 +32,10 @@ typedef enum
 {
     EXPR_VARIANT__UNRESOLVED_NAME,
 
-    EXPR_VARIANT__PROPERTY_NAME,
     EXPR_VARIANT__LITERAL,
     EXPR_VARIANT__PLACEHOLDER,
-    EXPR_VARIANT__BIN_OP,
+    EXPR_VARIANT__BIN_OP, // CLEANUP: Rename to `BINARY_OPERATION`
+    EXPR_VARIANT__PROPERTY_ACCESS,
 
     EXPR_VARIANT__VARIABLE_REFERENCE_INDEX,
 } ExprVariant;
@@ -43,7 +43,7 @@ typedef enum
 // Operation
 typedef enum
 {
-    OPERATION__INDEX,
+    OPERATION__ACCESS,
 
     OPERATION__MUL,
     OPERATION__DIV,
@@ -81,7 +81,7 @@ struct Expression
     ExprVariant variant;
     union
     {
-        struct // UNRESOLVED_NAME / PROPERTY_NAME
+        struct // UNRESOLVED_NAME
         {
             sub_string name;
         };
@@ -95,10 +95,16 @@ struct Expression
         };
         struct // BIN_OP
         {
-            Operation op;
             Expression *lhs;
             Expression *rhs;
-            size_t index_property_index;
+            Operation op;
+        };
+        struct // PROPERTY_ACCESS
+        {
+            Expression *subject;
+            sub_string property_name;
+            size_t placeholder_index;
+            size_t property_offset;
         };
         struct // VARIABLE_REFERENCE_INDEX
         {

@@ -219,7 +219,7 @@ Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_p
     Token t = parser->tokens.values[parser->current_index];
 
     if (t.kind == DOT)
-        infix_op = OPERATION__INDEX;
+        infix_op = OPERATION__ACCESS;
 
     else if (t.kind == STAR)
         infix_op = OPERATION__MUL;

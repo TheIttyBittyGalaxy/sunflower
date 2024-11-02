@@ -144,12 +144,13 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
 
     if (expr->variant == EXPR_VARIANT__BIN_OP)
     {
-        if (expr->op == OPERATION__INDEX)
+        if (expr->op == OPERATION__ACCESS)
         {
             // TODO: Currently we only support shallow indexing of a placeholder value. Support nested indexing.
 
-            expr->lhs = resolve_expression(program, rule, expr->lhs);
-            if (expr->lhs->variant != EXPR_VARIANT__PLACEHOLDER)
+            // Check expressions
+            Expression *subject = resolve_expression(program, rule, expr->lhs);
+            if (subject->variant != EXPR_VARIANT__PLACEHOLDER)
             {
                 fprintf(stderr, "Internal error: Indexing expressions which are not placeholders is not yet supported.\n");
                 print_expression(expr);
@@ -162,17 +163,22 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
                 print_expression(expr);
                 exit(EXIT_FAILURE);
             }
-            expr->rhs->variant = EXPR_VARIANT__PROPERTY_NAME;
+            sub_string property_name = expr->rhs->name;
 
-            Placeholder *placeholder = expr->lhs->placeholder;
+            // Convert BIN_OP to PROPERTY_ACCESS
+            Placeholder *placeholder = subject->placeholder;
             Node *node = placeholder->node_type;
-            sub_string field_name = expr->rhs->name;
+
+            expr->variant = EXPR_VARIANT__PROPERTY_ACCESS;
+            expr->subject = subject;
+
+            expr->placeholder_index = placeholder->index;
             for (size_t i = 0; i < node->properties_count; i++)
             {
                 Property *property = node->properties + i;
-                if (substrings_match(field_name, property->name))
+                if (substrings_match(property_name, property->name))
                 {
-                    expr->index_property_index = i;
+                    expr->property_offset = i;
                     break;
                 }
             }
@@ -185,7 +191,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             switch (expr->op)
             {
 
-            // NOTE: OPERATION__INDEX is handled separately, see above
+            // NOTE: OPERATION__ACCESS is handled separately, see above
 
             // Both operands should be numbers
             case OPERATION__MUL:

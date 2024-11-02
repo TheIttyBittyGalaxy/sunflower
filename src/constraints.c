@@ -53,32 +53,17 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
 
     case EXPR_VARIANT__BIN_OP:
     {
-        if (program_expression->op == OPERATION__INDEX)
-        {
-            // TODO: This way of converting an index is a bit of a hack.
-            //       This will need to change to generalise to most expressions.
-            if (program_expression->lhs->variant != EXPR_VARIANT__PLACEHOLDER || program_expression->rhs->variant != EXPR_VARIANT__PROPERTY_NAME)
-            {
-                fprintf(stderr, "Internal error: Could not convert index expression into arc expression");
-                print_expression(program_expression);
-                exit(EXIT_FAILURE);
-            }
+        expr->variant = EXPR_VARIANT__BIN_OP;
+        expr->op = program_expression->op;
+        expr->lhs = convert_expression(result, rule, program_expression->lhs);
+        expr->rhs = convert_expression(result, rule, program_expression->rhs);
+        break;
+    }
 
-            Placeholder *placeholder = program_expression->lhs->placeholder;
-
-            expr->variant = EXPR_VARIANT__VARIABLE_REFERENCE_INDEX;
-            // TODO: Can we change things upstream to make `get_reference_index_or_create_one` as simple as possible?
-            //       e.g. Could the resolver handle this complexity for us?
-            expr->variable_reference_index = get_reference_index_or_create_one(result, placeholder->index, program_expression->index_property_index);
-        }
-        else
-        {
-            expr->variant = EXPR_VARIANT__BIN_OP;
-            expr->op = program_expression->op;
-            expr->lhs = convert_expression(result, rule, program_expression->lhs);
-            expr->rhs = convert_expression(result, rule, program_expression->rhs);
-        }
-
+    case EXPR_VARIANT__PROPERTY_ACCESS:
+    {
+        expr->variant = EXPR_VARIANT__VARIABLE_REFERENCE_INDEX;
+        expr->variable_reference_index = get_reference_index_or_create_one(result, program_expression->placeholder_index, program_expression->property_offset);
         break;
     }
 
