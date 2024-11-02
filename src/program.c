@@ -3,20 +3,6 @@
 #include "program.h"
 
 // Strings & printing
-const char *type_category_string(TypePrimitive type_category)
-{
-    if (type_category == TYPE_PRIMITIVE__INVALID)
-        return "TYPE_PRIMITIVE__INVALID";
-    if (type_category == TYPE_PRIMITIVE__NUMBER)
-        return "TYPE_PRIMITIVE__NUMBER";
-    if (type_category == TYPE_PRIMITIVE__BOOL)
-        return "TYPE_PRIMITIVE__BOOL";
-    if (type_category == TYPE_PRIMITIVE__NODE)
-        return "TYPE_PRIMITIVE__NODE";
-
-    return "<INVALID TYPE_PRIMITIVE__CATEGORY>";
-}
-
 void print_program(const Program *program)
 {
     printf("PROGRAM\n");

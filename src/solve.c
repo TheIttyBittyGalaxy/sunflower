@@ -285,7 +285,7 @@ void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
 
             else
             {
-                fprintf(stderr, "Internal error: Encountered %s while resetting variables", type_category_string(property->type));
+                fprintf(stderr, "Internal error: Encountered %s while resetting variables", type_primitive_string(property->type));
                 exit(EXIT_FAILURE);
             }
         }

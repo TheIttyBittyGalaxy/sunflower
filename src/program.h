@@ -60,7 +60,6 @@ typedef struct
 } Program;
 
 // Strings & printing
-const char *type_category_string(TypePrimitive type_category);
 void print_program(const Program *program);
 void print_node(const Node *node);
 void print_rule(const Rule *rule);
