@@ -227,7 +227,7 @@ void print_expression(const Expression *expr)
 
     case EXPR_VARIANT__PLACEHOLDER:
     {
-        printf("!%.*s", expr->placeholder->name.len, expr->placeholder->name.str);
+        printf("%.*s¿", expr->placeholder->name.len, expr->placeholder->name.str);
         break;
     }
 
