@@ -48,6 +48,8 @@ const char *expression_kind_string(ExpressionKind kind)
         return "UNRESOLVED_NAME";
     if (kind == PROPERTY_NAME)
         return "PROPERTY_NAME";
+    if (kind == NUMBER_LITERAL)
+        return "NUMBER_LITERAL";
     if (kind == PLACEHOLDER)
         return "PLACEHOLDER";
     if (kind == BIN_OP)
