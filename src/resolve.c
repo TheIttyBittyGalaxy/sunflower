@@ -17,7 +17,7 @@ void resolve(Program *program)
         Node *node = program->nodes + n;
 
         // Prevent illegal node names
-        if (node->name.len == 3 && (strncmp(node->name.str, "num", 3) == 0))
+        if (substring_is(node->name, "num") || substring_is(node->name, "bool"))
         {
             fprintf(stderr, "Cannot name Node '%.*s' as this is an existing type", node->name.len, node->name.str);
             exit(EXIT_FAILURE);
@@ -51,10 +51,12 @@ void resolve(Program *program)
             }
 
             // Resolve the property's type
-            if (property->type_name.len == 3 && (strncmp(property->type_name.str, "num", 3) == 0))
-            {
+            if (substring_is(property->type_name, "num"))
                 property->type.primitive = TYPE_PRIMITIVE__NUMBER;
-            }
+
+            else if (substring_is(property->type_name, "bool"))
+                property->type.primitive = TYPE_PRIMITIVE__BOOL;
+
             else
             {
                 for (size_t j = 0; j < program->nodes_count; j++)
@@ -130,6 +132,23 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
     if (expr->variant == EXPR_VARIANT__UNRESOLVED_NAME)
     {
         sub_string unresolved_name = expr->name;
+
+        if (substring_is(unresolved_name, "true"))
+        {
+            expr->variant = EXPR_VARIANT__LITERAL;
+            expr->literal_value.type_primitive = TYPE_PRIMITIVE__BOOL;
+            expr->literal_value.boolean = 1;
+            return expr;
+        }
+
+        if (substring_is(unresolved_name, "false"))
+        {
+            expr->variant = EXPR_VARIANT__LITERAL;
+            expr->literal_value.type_primitive = TYPE_PRIMITIVE__BOOL;
+            expr->literal_value.boolean = 0;
+            return expr;
+        }
+
         for (size_t i = 0; i < rule->placeholders_count; i++)
         {
             Placeholder *placeholder = rule->placeholders + i;
