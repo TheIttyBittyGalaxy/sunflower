@@ -103,7 +103,7 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
         for (size_t i = 0; i < quantum_map->instances_count; i++)
         {
             QuantumInstance *instance = quantum_map->instances + i;
-            if (instance->node != placeholder->node_type)
+            if (instance->node != placeholder->type.node)
                 continue;
 
             Arc *arc = EXTEND_ARRAY(constraints->single_arcs, Arc);
@@ -143,7 +143,7 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
             while (n < total_placeholders)
             {
                 QuantumInstance *instance = quantum_map->instances + instance_index[n];
-                if (instance->node == rule->placeholders[n].node_type)
+                if (instance->node == rule->placeholders[n].type.node)
                 {
                     bool no_repeats = true;
                     for (size_t v = 0; v < n; v++)

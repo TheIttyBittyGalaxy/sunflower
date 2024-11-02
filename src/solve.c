@@ -263,12 +263,12 @@ void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
 
             Property *property = node->properties + p;
 
-            if (property->type == TYPE_PRIMITIVE__NUMBER)
+            if (property->type.primitive == TYPE_PRIMITIVE__NUMBER)
             {
                 quantum_map->variables[v] = UINT64_MAX;
             }
 
-            else if (property->type == TYPE_PRIMITIVE__NODE)
+            else if (property->type.primitive == TYPE_PRIMITIVE__NODE)
             {
                 uint64_t bitfield = 0;
                 for (size_t k = 0; k < 64; k++)
@@ -276,7 +276,7 @@ void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
                     if (k >= quantum_map->instances_count)
                         break;
 
-                    if (quantum_map->instances[k].node == property->node_type)
+                    if (quantum_map->instances[k].node == property->type.node)
                         bitfield = bitfield | (1ULL << k);
                 }
 
@@ -285,7 +285,7 @@ void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
 
             else
             {
-                fprintf(stderr, "Internal error: Encountered %s while resetting variables", type_primitive_string(property->type));
+                fprintf(stderr, "Internal error: Encountered %s while resetting variables", type_primitive_string(property->type.primitive));
                 exit(EXIT_FAILURE);
             }
         }

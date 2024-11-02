@@ -53,7 +53,7 @@ void resolve(Program *program)
             // Resolve the property's type
             if (property->type_name.len == 3 && (strncmp(property->type_name.str, "num", 3) == 0))
             {
-                property->type = TYPE_PRIMITIVE__NUMBER;
+                property->type.primitive = TYPE_PRIMITIVE__NUMBER;
             }
             else
             {
@@ -62,14 +62,14 @@ void resolve(Program *program)
                     Node *node = program->nodes + j;
                     if (substrings_match(node->name, property->type_name))
                     {
-                        property->type = TYPE_PRIMITIVE__NODE;
-                        property->node_type = node;
+                        property->type.primitive = TYPE_PRIMITIVE__NODE;
+                        property->type.node = node;
                         break;
                     }
                 }
             }
 
-            if (property->type == TYPE_PRIMITIVE__INVALID)
+            if (property->type.primitive == TYPE_PRIMITIVE__INVALID)
             {
                 fprintf(stderr, "Type '%.*s' of '%.*s' property does not exist.", property->type_name.len, property->type_name.str, property->name.len, property->name.str);
                 exit(EXIT_FAILURE);
@@ -103,16 +103,17 @@ void resolve(Program *program)
             for (size_t n = 0; n < program->nodes_count; n++)
             {
                 Node *node = program->nodes + n;
-                if (substrings_match(node->name, placeholder->node_name))
+                if (substrings_match(node->name, placeholder->type_name))
                 {
-                    placeholder->node_type = node;
+                    placeholder->type.primitive = TYPE_PRIMITIVE__NODE;
+                    placeholder->type.node = node;
                     break;
                 }
             }
 
-            if (!placeholder->node_type)
+            if (!placeholder->type.node)
             {
-                fprintf(stderr, "Could not find node with name %.*s", placeholder->node_name.len, placeholder->node_name.str);
+                fprintf(stderr, "Could not find node with name %.*s", placeholder->type_name.len, placeholder->type_name.str);
                 exit(EXIT_FAILURE);
             }
         }
@@ -167,7 +168,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
 
             // Convert BIN_OP to PROPERTY_ACCESS
             Placeholder *placeholder = subject->placeholder;
-            Node *node = placeholder->node_type;
+            Node *node = placeholder->type.node;
 
             expr->variant = EXPR_VARIANT__PROPERTY_ACCESS;
             expr->subject = subject;
@@ -204,14 +205,14 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             case OPERATION__LESS_THAN_OR_EQUAL:
             case OPERATION__MORE_THAN_OR_EQUAL:
             {
-                if (deduce_type_of(expr->lhs).type != TYPE_PRIMITIVE__NUMBER)
+                if (deduce_type_of(expr->lhs).primitive != TYPE_PRIMITIVE__NUMBER)
                 {
                     fprintf(stderr, "Expression is not a number.\n");
                     print_expression(expr->lhs);
                     exit(EXIT_FAILURE);
                 }
 
-                if (deduce_type_of(expr->rhs).type != TYPE_PRIMITIVE__NUMBER)
+                if (deduce_type_of(expr->rhs).primitive != TYPE_PRIMITIVE__NUMBER)
                 {
                     fprintf(stderr, "Expression is not a number.\n");
                     print_expression(expr->rhs);
@@ -228,8 +229,8 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
                 ExprType rht = deduce_type_of(expr->rhs);
 
                 if (
-                    (lht.type != rht.type) ||
-                    (lht.type == TYPE_PRIMITIVE__NODE && rht.type == TYPE_PRIMITIVE__NODE && lht.node == rht.node))
+                    (lht.primitive != rht.primitive) ||
+                    (lht.primitive == TYPE_PRIMITIVE__NODE && rht.primitive == TYPE_PRIMITIVE__NODE && lht.node == rht.node))
                 {
                     fprintf(stderr, "LHS and RHS of comparison will never be the same.\n");
                     print_expression(expr);
@@ -244,14 +245,14 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             case OPERATION__LOGICAL_AND:
             case OPERATION__LOGICAL_OR:
             {
-                if (deduce_type_of(expr->lhs).type != TYPE_PRIMITIVE__BOOL)
+                if (deduce_type_of(expr->lhs).primitive != TYPE_PRIMITIVE__BOOL)
                 {
                     fprintf(stderr, "Expression is not a boolean.\n");
                     print_expression(expr->lhs);
                     exit(EXIT_FAILURE);
                 }
 
-                if (deduce_type_of(expr->rhs).type != TYPE_PRIMITIVE__BOOL)
+                if (deduce_type_of(expr->rhs).primitive != TYPE_PRIMITIVE__BOOL)
                 {
                     fprintf(stderr, "Expression is not a boolean.\n");
                     print_expression(expr->rhs);

@@ -12,7 +12,7 @@ ExprType deduce_type_of(Expression *expr)
         return (ExprType){.primitive = expr->literal_value.type_primitive, .node = NULL};
 
     case EXPR_VARIANT__PLACEHOLDER:
-        return (ExprType){.type = TYPE_PRIMITIVE__NODE, .node = expr->placeholder->node_type};
+        return expr->placeholder->type;
 
     case EXPR_VARIANT__BIN_OP:
     {
@@ -29,7 +29,7 @@ ExprType deduce_type_of(Expression *expr)
         case OPERATION__DIV:
         case OPERATION__ADD:
         case OPERATION__SUB:
-            return (ExprType){.type = TYPE_PRIMITIVE__NUMBER, .node = NULL};
+            return (ExprType){.primitive = TYPE_PRIMITIVE__NUMBER, .node = NULL};
 
         case OPERATION__LESS_THAN:
         case OPERATION__MORE_THAN:
@@ -39,15 +39,15 @@ ExprType deduce_type_of(Expression *expr)
         case OPERATION__NOT_EQUAL_TO:
         case OPERATION__LOGICAL_AND:
         case OPERATION__LOGICAL_OR:
-            return (ExprType){.type = TYPE_PRIMITIVE__BOOL, .node = NULL};
+            return (ExprType){.primitive = TYPE_PRIMITIVE__BOOL, .node = NULL};
         }
     }
 
     case EXPR_VARIANT__PROPERTY_ACCESS:
     {
-        Node *node = expr->subject->placeholder->node_type;
+        Node *node = expr->subject->placeholder->type.node;
         Property *property = node->properties + expr->property_offset;
-        return (ExprType){.type = property->type, .node = property->node_type};
+        return property->type;
     }
 
     default:

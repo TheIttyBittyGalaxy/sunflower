@@ -14,11 +14,9 @@ typedef struct Node Node;
 // Property
 struct Property
 {
-    // TODO: Refactor to use the `ExprType` struct
     sub_string name;
-    TypePrimitive type;
     sub_string type_name;
-    Node *node_type;
+    ExprType type;
 };
 
 // Node
@@ -37,10 +35,9 @@ struct Node
 // CLEANUP: Is there a better way of doing this?
 struct Placeholder
 {
-    // TODO: Refactor to use the `ExprType` struct
     sub_string name;
-    sub_string node_name;
-    Node *node_type;
+    sub_string type_name;
+    ExprType type;
     size_t index; // The placeholder's index in the rule's array of placeholders
 };
 

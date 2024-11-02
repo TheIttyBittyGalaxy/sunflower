@@ -23,7 +23,7 @@ typedef enum
 // ExprType
 typedef struct
 {
-    TypePrimitive type;
+    TypePrimitive primitive;
     Node *node;
 } ExprType;
 

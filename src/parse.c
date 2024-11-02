@@ -105,10 +105,8 @@ void parse_node_declaration(Parser *parser)
     while (!peek(parser, CURLY_R))
     {
         Property *property = EXTEND_ARRAY(node->properties, Property);
-        property->name = NULL_SUB_STRING;
-        property->type = TYPE_PRIMITIVE__INVALID; // TODO: For clarity, should we set this to "unresolved type"?
-        property->type_name = NULL_SUB_STRING;
-        property->node_type = NULL;
+        property->type.primitive = TYPE_PRIMITIVE__INVALID; // TODO: For clarity, should we set this to "unresolved type"?
+        property->type.node = NULL;
 
         Token property_name = eat(parser, NAME);
         property->name = property_name.str;
@@ -136,10 +134,11 @@ void parse_rule(Parser *parser)
     {
         Placeholder *placeholder = EXTEND_ARRAY(rule->placeholders, Placeholder);
         placeholder->index = rule->placeholders_count - 1;
-        placeholder->node_type = NULL;
+        placeholder->type.primitive = TYPE_PRIMITIVE__INVALID; // TODO: For clarity, should we set this to "unresolved type"?
+        placeholder->type.node = NULL;
 
         Token node_name = eat(parser, NAME);
-        placeholder->node_name = node_name.str;
+        placeholder->type_name = node_name.str;
 
         Token name = eat(parser, NAME);
         placeholder->name = name.str;

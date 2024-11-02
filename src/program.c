@@ -27,16 +27,16 @@ void print_node(const Node *node)
         Property p = node->properties[i];
         printf("%.*s: ", p.name.len, p.name.str);
 
-        if (p.type == TYPE_PRIMITIVE__INVALID)
+        if (p.type.primitive == TYPE_PRIMITIVE__INVALID)
             printf("INVALID TYPE (%.*s)", p.type_name.len, p.type_name.str);
-        else if (p.type == TYPE_PRIMITIVE__NUMBER)
+        else if (p.type.primitive == TYPE_PRIMITIVE__NUMBER)
             printf("NUM");
-        else if (p.type == TYPE_PRIMITIVE__BOOL)
+        else if (p.type.primitive == TYPE_PRIMITIVE__BOOL)
             printf("BOOL");
-        else if (p.type == TYPE_PRIMITIVE__NODE)
-            printf("NODE %.*s (%.*s)", p.node_type->name.len, p.node_type->name.str, p.type_name.len, p.type_name.str);
+        else if (p.type.primitive == TYPE_PRIMITIVE__NODE)
+            printf("NODE (%.*s)", p.type_name.len, p.type_name.str);
         else
-            printf("INVALID (%.*s)", p.type_name.len, p.type_name.str);
+            printf("INVALID PRIMITIVE (%.*s)", p.type_name.len, p.type_name.str);
     }
     printf(" }\n");
 }
@@ -49,7 +49,7 @@ void print_rule(const Rule *rule)
         if (i > 0)
             printf(", ");
         Placeholder placeholder = rule->placeholders[i];
-        printf("%.*s %.*s", placeholder.node_name.len, placeholder.node_name.str, placeholder.name.len, placeholder.name.str);
+        printf("%.*s %.*s", placeholder.type_name.len, placeholder.type_name.str, placeholder.name.len, placeholder.name.str);
     }
     printf(" -> ");
     print_expression(rule->expression);
