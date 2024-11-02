@@ -328,6 +328,9 @@ void solve(QuantumMap *quantum_map, Constraints constraints)
         if (valid_solution)
         {
             i++;
+            if (i == (int)quantum_map->variables_count)
+                break; // Solution complete
+
             remaining_values_for[i] = quantum_map->variables[i];
 
             int value = rand() % 64;
