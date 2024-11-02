@@ -132,8 +132,8 @@ const char *expr_variant_string(ExprVariant variant)
 
     if (variant == EXPR_VARIANT__VARIABLE_REFERENCE_INDEX)
         return "VARIABLE_REFERENCE_INDEX";
-    if (variant == EXPR_VARIANT__PLACEHOLDER_REFERENCE)
-        return "PLACEHOLDER_REFERENCE";
+    if (variant == EXPR_VARIANT__INSTANCE_REFERENCE_INDEX)
+        return "INSTANCE_REFERENCE_INDEX";
 
     return "<INVALID EXPR_VARIANT>";
 }
@@ -261,13 +261,13 @@ void print_expression(const Expression *expr)
 
     case EXPR_VARIANT__VARIABLE_REFERENCE_INDEX:
     {
-        printf("[v%d]", expr->variable_reference_index);
+        printf("[V%d]", expr->variable_reference_index);
         break;
     }
 
-    case EXPR_VARIANT__PLACEHOLDER_REFERENCE:
+    case EXPR_VARIANT__INSTANCE_REFERENCE_INDEX:
     {
-        printf("[p%d]", expr->placeholder_reference_index);
+        printf("[I%d]", expr->instance_reference_index);
         break;
     }
 

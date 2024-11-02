@@ -6,7 +6,7 @@
 #include "solve.h"
 
 // Evaluate arc expression
-int evaluate_arc_expression(Arc *arc, Expression *expr, int *variable_values)
+int evaluate_arc_expression(Arc *arc, Expression *expr, int *variable_values, size_t *instance_values)
 {
 
     switch (expr->variant)
@@ -27,8 +27,8 @@ int evaluate_arc_expression(Arc *arc, Expression *expr, int *variable_values)
 
     case EXPR_VARIANT__BIN_OP:
     {
-        int rhs = evaluate_arc_expression(arc, expr->rhs, variable_values);
-        int lhs = evaluate_arc_expression(arc, expr->lhs, variable_values);
+        int rhs = evaluate_arc_expression(arc, expr->rhs, variable_values, instance_values);
+        int lhs = evaluate_arc_expression(arc, expr->lhs, variable_values, instance_values);
 
         if (expr->op == OPERATION__MUL)
             return lhs * rhs;
@@ -69,6 +69,11 @@ int evaluate_arc_expression(Arc *arc, Expression *expr, int *variable_values)
         return variable_values[index];
     }
 
+    case EXPR_VARIANT__INSTANCE_REFERENCE_INDEX:
+    {
+        return instance_values[expr->instance_reference_index];
+    }
+
     default:
     {
         fprintf(stderr, "Unable to evaluate %s expression\n", expr_variant_string(expr->variant));
@@ -94,7 +99,7 @@ void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constrai
             if (!(var_bitfield & value_bitfield))
                 continue;
 
-            int result = evaluate_arc_expression(arc, arc->expr, &value);
+            int result = evaluate_arc_expression(arc, arc->expr, &value, arc->instance_indexes);
 
             if (result == 0)
                 var_bitfield -= value_bitfield;
@@ -200,7 +205,7 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
                 }
 
                 // Evaluate the set of possible variables to determine if the primary value is a valid possibility
-                int result = evaluate_arc_expression(arc, arc->expr, var_value);
+                int result = evaluate_arc_expression(arc, arc->expr, var_value, arc->instance_indexes);
 
                 if (result != 0)
                 {

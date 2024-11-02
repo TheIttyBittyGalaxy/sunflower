@@ -53,8 +53,8 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
 
     case EXPR_VARIANT__PLACEHOLDER:
     {
-        expr->variant = EXPR_VARIANT__PLACEHOLDER_REFERENCE;
-        expr->placeholder_reference_index = program_expression->placeholder->index;
+        expr->variant = EXPR_VARIANT__INSTANCE_REFERENCE_INDEX;
+        expr->instance_reference_index = program_expression->placeholder->index;
         break;
     }
 
@@ -115,9 +115,14 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
 
             Arc *arc = EXTEND_ARRAY(constraints->single_arcs, Arc);
             arc->expr = arc_expression;
+
             arc->variable_indexes_count = 1;
             arc->variable_indexes = (size_t *)malloc(sizeof(size_t));
             arc->variable_indexes[0] = instance->variables_array_index + result.variable_references[0].property_offset;
+
+            arc->instance_indexes_count = 1;
+            arc->instance_indexes = (size_t *)malloc(sizeof(size_t));
+            arc->instance_indexes[0] = i;
         }
 
         return;
@@ -199,6 +204,14 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
             Arc *arc = EXTEND_ARRAY(constraints->multi_arcs, Arc);
             arc->expr = arc_expression;
             arc->expr_rotation = rotation;
+
+            arc->instance_indexes_count = total_placeholders;
+            arc->instance_indexes = (size_t *)malloc(sizeof(size_t) * total_placeholders);
+            for (size_t n = 0; n < total_placeholders; n++)
+            {
+                arc->instance_indexes[n] = instance_index[n];
+            }
+
             arc->variable_indexes_count = result.variable_references_count;
             arc->variable_indexes = (size_t *)malloc(sizeof(size_t) * arc->variable_indexes_count);
             for (size_t v = 0; v < result.variable_references_count; v++)

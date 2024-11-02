@@ -12,6 +12,8 @@
 // Arc
 typedef struct
 {
+    size_t *instance_indexes;
+    size_t instance_indexes_count;
     size_t *variable_indexes;
     size_t variable_indexes_count;
     size_t expr_rotation;
