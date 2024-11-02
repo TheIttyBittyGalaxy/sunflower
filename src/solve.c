@@ -56,7 +56,8 @@ ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_v
         if (expr->op == OPERATION__LOGICAL_OR)
             return BOOL_RESULT(lhs.boolean || rhs.boolean);
 
-        fprintf(stderr, "Unable to evaluate %s binary operation", operation_string(expr->op));
+        fprintf(stderr, "Unable to evaluate %s binary operation\n", operation_string(expr->op));
+        print_expression(expr);
         exit(EXIT_FAILURE);
     }
 
@@ -68,7 +69,7 @@ ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_v
 
     default:
     {
-        fprintf(stderr, "Unable to evaluate %s expression", expr_variant_string(expr->variant));
+        fprintf(stderr, "Unable to evaluate %s expression\n", expr_variant_string(expr->variant));
         print_expression(expr);
         exit(EXIT_FAILURE);
     }
