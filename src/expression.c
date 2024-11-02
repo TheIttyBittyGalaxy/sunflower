@@ -9,7 +9,7 @@ ExprType deduce_type_of(Expression *expr)
     switch (expr->variant)
     {
     case EXPR_VARIANT__LITERAL:
-        return (ExprType){.type = TYPE_PRIMITIVE__NUMBER, .node = NULL};
+        return (ExprType){.primitive = expr->literal_value.type_primitive, .node = NULL};
 
     case EXPR_VARIANT__PLACEHOLDER:
         return (ExprType){.type = TYPE_PRIMITIVE__NODE, .node = expr->placeholder->node_type};
