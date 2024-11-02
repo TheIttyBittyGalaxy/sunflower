@@ -257,6 +257,11 @@ void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
                 quantum_map->variables[v] = UINT64_MAX;
             }
 
+            else if (property->type.primitive == TYPE_PRIMITIVE__BOOL)
+            {
+                quantum_map->variables[v] = 0b11;
+            }
+
             else if (property->type.primitive == TYPE_PRIMITIVE__NODE)
             {
                 uint64_t bitfield = 0;
