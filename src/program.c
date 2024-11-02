@@ -26,19 +26,7 @@ void print_node(const Node *node)
 
         Property p = node->properties[i];
         printf("%.*s: ", p.name.len, p.name.str);
-
-        if (p.type.primitive == TYPE_PRIMITIVE__INVALID)
-            printf("INVALID TYPE (%.*s)", p.type_name.len, p.type_name.str);
-        if (p.type.primitive == TYPE_PRIMITIVE__UNRESOLVED)
-            printf("UNRESOLVED TYPE (%.*s)", p.type_name.len, p.type_name.str);
-        else if (p.type.primitive == TYPE_PRIMITIVE__NUMBER)
-            printf("NUM");
-        else if (p.type.primitive == TYPE_PRIMITIVE__BOOL)
-            printf("BOOL");
-        else if (p.type.primitive == TYPE_PRIMITIVE__NODE)
-            printf("NODE (%.*s)", p.type_name.len, p.type_name.str);
-        else
-            printf("INVALID PRIMITIVE (%.*s)", p.type_name.len, p.type_name.str);
+        print_expr_type(p.type, p.type_name);
     }
     printf(" }\n");
 }

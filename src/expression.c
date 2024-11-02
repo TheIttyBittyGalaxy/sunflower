@@ -172,6 +172,29 @@ const char *operation_string(Operation operation)
     return "<INVALID OPERATION>";
 }
 
+void print_expr_type(const ExprType type, sub_string optional_type_name)
+{
+    if (optional_type_name.len == 0)
+    {
+        const char *str = "?";
+        optional_type_name.str = str;
+        optional_type_name.len = 1;
+    }
+
+    if (type.primitive == TYPE_PRIMITIVE__INVALID)
+        printf("INVALID_TYPE (%.*s)", optional_type_name.len, optional_type_name.str);
+    if (type.primitive == TYPE_PRIMITIVE__UNRESOLVED)
+        printf("UNRESOLVED_TYPE (%.*s)", optional_type_name.len, optional_type_name.str);
+    else if (type.primitive == TYPE_PRIMITIVE__NUMBER)
+        printf("NUM");
+    else if (type.primitive == TYPE_PRIMITIVE__BOOL)
+        printf("BOOL");
+    else if (type.primitive == TYPE_PRIMITIVE__NODE)
+        printf("NODE_TYPE (%.*s)", optional_type_name.len, optional_type_name.str);
+    else
+        printf("<TYPE WITH INVALID PRIMITIVE (%.*s)>", optional_type_name.len, optional_type_name.str);
+}
+
 void print_expr_value(const ExprValue value)
 {
     if (value.type_primitive == TYPE_PRIMITIVE__INVALID)

@@ -127,6 +127,7 @@ size_t precedence_of(Operation op);
 const char *type_primitive_string(TypePrimitive primitive);
 const char *expr_variant_string(ExprVariant variant);
 const char *operation_string(Operation operation);
+void print_expr_type(const ExprType type, sub_string optional_type_name);
 void print_expr_value(const ExprValue value);
 void print_expression(const Expression *expr);
 
