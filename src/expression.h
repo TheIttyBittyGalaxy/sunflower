@@ -40,6 +40,7 @@ typedef enum
     EXPR_VARIANT__PROPERTY_ACCESS,
 
     EXPR_VARIANT__VARIABLE_REFERENCE_INDEX,
+    EXPR_VARIANT__PLACEHOLDER_REFERENCE,
 } ExprVariant;
 
 // Operation
@@ -111,6 +112,10 @@ struct Expression
         struct // VARIABLE_REFERENCE_INDEX
         {
             size_t variable_reference_index;
+        };
+        struct // PLACEHOLDER_REFERENCE
+        {
+            size_t placeholder_reference_index;
         };
     };
 };

@@ -51,6 +51,13 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
         break;
     }
 
+    case EXPR_VARIANT__PLACEHOLDER:
+    {
+        expr->variant = EXPR_VARIANT__PLACEHOLDER_REFERENCE;
+        expr->placeholder_reference_index = program_expression->placeholder->index;
+        break;
+    }
+
     case EXPR_VARIANT__BIN_OP:
     {
         expr->variant = EXPR_VARIANT__BIN_OP;
