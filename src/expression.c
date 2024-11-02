@@ -236,20 +236,11 @@ void print_expression(const Expression *expr)
     case EXPR_VARIANT__BIN_OP:
     {
         const char *op = (const char *[]){".", "*", "/", "+", "-", "<", ">", "≤", "≥", "=", "≠", "AND", "OR"}[expr->op];
-        if (precedence_of(expr->op) == 1)
-        {
-            print_expression(expr->lhs);
-            printf(op);
-            print_expression(expr->rhs);
-        }
-        else
-        {
-            putchar('(');
-            print_expression(expr->lhs);
-            printf(" %s ", op);
-            print_expression(expr->rhs);
-            putchar(')');
-        }
+        putchar('(');
+        print_expression(expr->lhs);
+        printf(expr->op == OPERATION__ACCESS ? "%s" : " %s ", op);
+        print_expression(expr->rhs);
+        putchar(')');
         break;
     }
 
