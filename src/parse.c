@@ -50,8 +50,6 @@ void parse_program(Parser *parser);
 void parse_node_declaration(Parser *parser);
 void parse_rule(Parser *parser);
 Expression *parse_expression(Parser *parser);
-Expression *parse_expression_prefix(Parser *parser, size_t precedence);
-Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t precedence);
 
 // Parse
 Program *parse(TokenArray tokens)
@@ -150,20 +148,15 @@ void parse_rule(Parser *parser)
 }
 
 // Parse expression
-Expression *parse_expression(Parser *parser)
+Expression *parse_precedence(Parser *parser, Precedence precedence)
 {
-    return parse_expression_prefix(parser, MIN_PRECEDENCE);
-}
-
-Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
-{
-    Expression *expr = NULL;
+    Expression *lhs = NULL;
 
     // (expression)
     if (peek(parser, PAREN_L))
     {
         eat(parser, PAREN_L);
-        expr = parse_expression(parser);
+        lhs = parse_expression(parser);
         eat(parser, PAREN_R);
     }
 
@@ -171,9 +164,9 @@ Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
     else if (peek(parser, NAME))
     {
         Token t = eat(parser, NAME);
-        expr = NEW(Expression);
-        expr->variant = EXPR_VARIANT__UNRESOLVED_NAME;
-        expr->name = t.str;
+        lhs = NEW(Expression);
+        lhs->variant = EXPR_VARIANT__UNRESOLVED_NAME;
+        lhs->name = t.str;
     }
 
     // Number
@@ -186,87 +179,75 @@ Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
         for (size_t i = 0; i < t.str.len; i++)
             num = num * 10 + ((int)(t.str.str[i]) - 48);
 
-        expr = NEW(Expression);
-        expr->variant = EXPR_VARIANT__LITERAL;
-        expr->literal_value.type_primitive = TYPE_PRIMITIVE__NUMBER;
-        expr->literal_value.number = num;
+        lhs = NEW(Expression);
+        lhs->variant = EXPR_VARIANT__LITERAL;
+        lhs->literal_value.type_primitive = TYPE_PRIMITIVE__NUMBER;
+        lhs->literal_value.number = num;
     }
 
-    // Error if prefix not found
-    if (expr == NULL)
+    // Error if primary value not found
+    if (lhs == NULL)
     {
         Token t = parser->tokens.values[parser->current_index];
         fprintf(stderr, "Error at %d:%d, expected expression but got %s\n", t.line, t.column, token_kind_string(t.kind));
         exit(EXIT_FAILURE);
     }
 
-    // Parse expression with infix
+    // Parse infix expression
     while (true)
     {
-        Expression *full_expr = parse_expression_infix(parser, expr, max_precedence);
-        if (expr == full_expr)
-            break;
-        expr = full_expr;
-    }
+        Token t = parser->tokens.values[parser->current_index];
 
-    return expr;
-}
+        Operation operation;
+        if (t.kind == DOT)
+            operation = OPERATION__ACCESS;
+        else if (t.kind == STAR)
+            operation = OPERATION__MUL;
+        else if (t.kind == SLASH)
+            operation = OPERATION__DIV;
+        else if (t.kind == PLUS)
+            operation = OPERATION__ADD;
+        else if (t.kind == MINUS)
+            operation = OPERATION__SUB;
+        else if (t.kind == ARROW_L)
+            operation = OPERATION__LESS_THAN;
+        else if (t.kind == ARROW_R)
+            operation = OPERATION__MORE_THAN;
+        else if (t.kind == ARROW_L_EQUAL)
+            operation = OPERATION__LESS_THAN_OR_EQUAL;
+        else if (t.kind == ARROW_R_EQUAL)
+            operation = OPERATION__MORE_THAN_OR_EQUAL;
+        else if (t.kind == EQUAL_SIGN)
+            operation = OPERATION__EQUAL_TO;
+        else if (t.kind == EXCLAIM_EQUAL)
+            operation = OPERATION__NOT_EQUAL_TO;
+        else if (t.kind == KEY_AND)
+            operation = OPERATION__LOGICAL_AND;
+        else if (t.kind == KEY_OR)
+            operation = OPERATION__LOGICAL_OR;
+        else
+            break; // There is no expression past this point
 
-Expression *parse_expression_infix(Parser *parser, Expression *lhs, size_t max_precedence)
-{
-    Operation infix_op;
-    Token t = parser->tokens.values[parser->current_index];
+        size_t operation_precedence = precedence_of(operation);
 
-    if (t.kind == DOT)
-        infix_op = OPERATION__ACCESS;
+        if (operation_precedence <= precedence)
+            break; // Wrong precedence, return and continue at a different level of precedence
 
-    else if (t.kind == STAR)
-        infix_op = OPERATION__MUL;
-    else if (t.kind == SLASH)
-        infix_op = OPERATION__DIV;
-    else if (t.kind == PLUS)
-        infix_op = OPERATION__ADD;
-    else if (t.kind == MINUS)
-        infix_op = OPERATION__SUB;
-
-    else if (t.kind == ARROW_L)
-        infix_op = OPERATION__LESS_THAN;
-    else if (t.kind == ARROW_R)
-        infix_op = OPERATION__MORE_THAN;
-    else if (t.kind == ARROW_L_EQUAL)
-        infix_op = OPERATION__LESS_THAN_OR_EQUAL;
-    else if (t.kind == ARROW_R_EQUAL)
-        infix_op = OPERATION__MORE_THAN_OR_EQUAL;
-
-    else if (t.kind == EQUAL_SIGN)
-        infix_op = OPERATION__EQUAL_TO;
-    else if (t.kind == EXCLAIM_EQUAL)
-        infix_op = OPERATION__NOT_EQUAL_TO;
-
-    else if (t.kind == KEY_AND)
-        infix_op = OPERATION__LOGICAL_AND;
-    else if (t.kind == KEY_OR)
-        infix_op = OPERATION__LOGICAL_OR;
-
-    else
-        return lhs;
-
-    size_t infix_op_precedence = precedence_of(infix_op);
-
-    if (infix_op_precedence <= max_precedence)
-    {
         eat(parser, t.kind);
 
         Expression *expr = NEW(Expression);
         expr->variant = EXPR_VARIANT__BIN_OP;
         expr->lhs = lhs;
-        expr->op = infix_op;
-        expr->rhs = parse_expression_prefix(parser, infix_op_precedence);
+        expr->op = operation;
+        expr->rhs = parse_precedence(parser, operation_precedence); // NOTE: If an operation should be right-associative pass `operation_precedence - 1`
 
-        return expr;
+        lhs = expr;
     }
-    else
-    {
-        return lhs;
-    }
+
+    return lhs;
+}
+
+Expression *parse_expression(Parser *parser)
+{
+    return parse_precedence(parser, 0);
 }

@@ -65,29 +65,29 @@ size_t precedence_of(Operation op)
     switch (op)
     {
     case OPERATION__ACCESS:
-        return 1;
+        return 6;
 
     case OPERATION__MUL:
     case OPERATION__DIV:
-        return 2;
+        return 5;
 
     case OPERATION__ADD:
     case OPERATION__SUB:
-        return 3;
+        return 4;
 
     case OPERATION__LESS_THAN:
     case OPERATION__MORE_THAN:
     case OPERATION__LESS_THAN_OR_EQUAL:
     case OPERATION__MORE_THAN_OR_EQUAL:
-        return 4;
+        return 3;
 
     case OPERATION__EQUAL_TO:
     case OPERATION__NOT_EQUAL_TO:
-        return 5;
+        return 2;
 
     case OPERATION__LOGICAL_AND:
     case OPERATION__LOGICAL_OR:
-        return 6;
+        return 1;
 
     default:
     {

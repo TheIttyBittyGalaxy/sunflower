@@ -1,18 +1,6 @@
-DEF Descartes {
-    self: Descartes
+DEF Thing {
+    a: num
+    b: num
 }
 
-FOR Descartes rene: rene.self != rene 
-FOR Descartes a Descartes b: a.self != b.self 
-
-// DEF Thing {
-//     id: num
-//     next: num
-// }
-// 
-// FOR Thing x: x.id < 5
-// FOR Thing x Thing y: x.id != y.id
-// 
-// FOR Thing x: (x.id = 4 AND x.next = 0) OR (x.id != 4 AND x.next = x.id + 1)
-
-// FOR Thing x: (x.id = 4 AND x.next.id = 0) OR (x.id != 4 AND x.next.id = x.id + 1)
+FOR Thing x: 10 = x.a + x.b + 0

@@ -125,7 +125,6 @@ ExprType deduce_type_of(Expression *expr);
 
 // Precedence
 typedef size_t Precedence;
-static const size_t MIN_PRECEDENCE = SIZE_MAX;
 size_t precedence_of(Operation op);
 
 // Strings & printing
