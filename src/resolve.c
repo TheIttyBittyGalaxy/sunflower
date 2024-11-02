@@ -232,7 +232,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
 
                 if (
                     (lht.primitive != rht.primitive) ||
-                    (lht.primitive == TYPE_PRIMITIVE__NODE && rht.primitive == TYPE_PRIMITIVE__NODE && lht.node == rht.node))
+                    (lht.primitive == TYPE_PRIMITIVE__NODE && rht.primitive == TYPE_PRIMITIVE__NODE && lht.node != rht.node))
                 {
                     fprintf(stderr, "LHS and RHS of comparison will never be the same.\n");
                     print_expression(expr);
