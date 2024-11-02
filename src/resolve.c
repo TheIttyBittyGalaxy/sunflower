@@ -146,9 +146,23 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
     {
         if (expr->op == INDEX)
         {
-            // TODO: Resolve index operations correctly! Right now we just assume the index is a valid shallow index into a placeholder
+            // TODO: Resolve index operations correctly! Right now we just assume the index is a totally valid shallow index
             expr->lhs = resolve_expression(program, rule, expr->lhs);
             expr->rhs->kind = PROPERTY_NAME;
+
+            Placeholder *placeholder = expr->lhs->placeholder;
+            Node *node = placeholder->node_type;
+            sub_string field_name = expr->rhs->name;
+
+            for (size_t i = 0; i < node->properties_count; i++)
+            {
+                Property *property = node->properties + i;
+                if (substrings_match(field_name, property->name))
+                {
+                    expr->index_property_index = i;
+                    break;
+                }
+            }
         }
         else
         {

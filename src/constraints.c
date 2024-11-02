@@ -67,34 +67,10 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
                 exit(EXIT_FAILURE);
             }
 
-            // CLEANUP: This could be handled better handled during 'resolve' instead.
-            // CLEANUP: Having to determine the index of placeholder like this shouldn't really be required.
-            //          Make adjustments upstream so that we never need to do this!
-            expr->kind = ARC_VALUE;
             Placeholder *placeholder = program_expression->lhs->placeholder;
-            Node *node = placeholder->node_type;
 
-            size_t placeholder_index = -1;
-            for (size_t i = 0; i < rule->placeholders_count; i++)
-            {
-                if (placeholder == (rule->placeholders + i))
-                {
-                    placeholder_index = i;
-                    break;
-                }
-            }
-
-            sub_string field_name = program_expression->rhs->name;
-            for (size_t i = 0; i < node->properties_count; i++)
-            {
-                Property *property = node->properties + i;
-
-                if (substrings_match(field_name, property->name))
-                {
-                    expr->index = get_variable_index_for(result, placeholder_index, i);
-                    break;
-                }
-            }
+            expr->kind = ARC_VALUE;
+            expr->index = get_variable_index_for(result, placeholder->index, program_expression->index_property_index);
         }
         else
         {

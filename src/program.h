@@ -38,6 +38,7 @@ struct Placeholder
     sub_string name;
     sub_string node_name;
     Node *node_type;
+    size_t index; // The placeholder's index in the rule's array of placeholders
 };
 
 // Rule

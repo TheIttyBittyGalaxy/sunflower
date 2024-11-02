@@ -108,6 +108,7 @@ struct Expression
             Operation op;
             Expression *lhs;
             Expression *rhs;
+            size_t index_property_index;
         };
         struct // ARC_VALUE
         {

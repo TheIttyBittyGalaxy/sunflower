@@ -21,23 +21,7 @@ TypeInfo deduce_type_of(Expression *expr)
         case INDEX:
         {
             Node *node = expr->lhs->placeholder->node_type;
-            sub_string field_name = expr->rhs->name;
-            Property *property = NULL;
-
-            for (size_t i = 0; i < node->properties_count; i++)
-            {
-                property = node->properties + i;
-                if (substrings_match(field_name, property->name))
-                    break;
-            }
-
-            if (!property)
-            {
-                fprintf(stderr, "Internal error: Could not deduce type of INDEX Expression - Could not find the property of the corresponding node type\n");
-                print_expression(expr);
-                exit(EXIT_FAILURE);
-            }
-
+            Property *property = node->properties + expr->index_property_index;
             return (TypeInfo){.type = property->type, .node_type = property->node_type};
         }
 
