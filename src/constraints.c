@@ -45,7 +45,7 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
 
     switch (program_expression->variant)
     {
-    case EXPR_VARIANT__NUMBER_LITERAL:
+    case EXPR_VARIANT__LITERAL:
     {
         memcpy(expr, program_expression, sizeof(Expression));
         break;

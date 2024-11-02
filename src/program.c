@@ -7,8 +7,8 @@ const char *type_category_string(TypePrimitive type_category)
 {
     if (type_category == TYPE_PRIMITIVE__INVALID)
         return "TYPE_PRIMITIVE__INVALID";
-    if (type_category == TYPE_PRIMITIVE__NUM)
-        return "TYPE_PRIMITIVE__NUM";
+    if (type_category == TYPE_PRIMITIVE__NUMBER)
+        return "TYPE_PRIMITIVE__NUMBER";
     if (type_category == TYPE_PRIMITIVE__BOOL)
         return "TYPE_PRIMITIVE__BOOL";
     if (type_category == TYPE_PRIMITIVE__NODE)
@@ -43,7 +43,7 @@ void print_node(const Node *node)
 
         if (p.type == TYPE_PRIMITIVE__INVALID)
             printf("INVALID TYPE (%.*s)", p.type_name.len, p.type_name.str);
-        else if (p.type == TYPE_PRIMITIVE__NUM)
+        else if (p.type == TYPE_PRIMITIVE__NUMBER)
             printf("NUM");
         else if (p.type == TYPE_PRIMITIVE__BOOL)
             printf("BOOL");

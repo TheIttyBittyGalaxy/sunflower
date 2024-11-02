@@ -7,12 +7,12 @@
 
 // Evaluate arc expression
 
-#define NUM_RESULT(result) ((ExprValue){ \
-    .type = TYPE_PRIMITIVE__NUM,         \
-    .num = result})
+#define NUM_RESULT(result) ((ExprValue){      \
+    .type_primitive = TYPE_PRIMITIVE__NUMBER, \
+    .number = result})
 
-#define BOOL_RESULT(result) ((ExprValue){ \
-    .type = TYPE_PRIMITIVE__BOOL,         \
+#define BOOL_RESULT(result) ((ExprValue){   \
+    .type_primitive = TYPE_PRIMITIVE__BOOL, \
     .boolean = result})
 
 ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_values)
@@ -20,8 +20,8 @@ ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_v
 
     switch (expr->variant)
     {
-    case EXPR_VARIANT__NUMBER_LITERAL:
-        return NUM_RESULT(expr->number);
+    case EXPR_VARIANT__LITERAL:
+        return NUM_RESULT(expr->literal_value.number);
 
     case EXPR_VARIANT__BIN_OP:
     {
@@ -29,27 +29,27 @@ ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_v
         ExprValue rhs = evaluate_arc_expression(arc, expr->rhs, given_values);
 
         if (expr->op == OPERATION__MUL)
-            return NUM_RESULT(lhs.num * rhs.num);
+            return NUM_RESULT(lhs.number * rhs.number);
         if (expr->op == OPERATION__DIV)
-            return NUM_RESULT(lhs.num / rhs.num);
+            return NUM_RESULT(lhs.number / rhs.number);
         if (expr->op == OPERATION__ADD)
-            return NUM_RESULT(lhs.num + rhs.num);
+            return NUM_RESULT(lhs.number + rhs.number);
         if (expr->op == OPERATION__SUB)
-            return NUM_RESULT(lhs.num - rhs.num);
+            return NUM_RESULT(lhs.number - rhs.number);
 
         if (expr->op == OPERATION__LESS_THAN)
-            return BOOL_RESULT(lhs.num < rhs.num);
+            return BOOL_RESULT(lhs.number < rhs.number);
         if (expr->op == OPERATION__MORE_THAN)
-            return BOOL_RESULT(lhs.num > rhs.num);
+            return BOOL_RESULT(lhs.number > rhs.number);
         if (expr->op == OPERATION__LESS_THAN_OR_EQUAL)
-            return BOOL_RESULT(lhs.num <= rhs.num);
+            return BOOL_RESULT(lhs.number <= rhs.number);
         if (expr->op == OPERATION__MORE_THAN_OR_EQUAL)
-            return BOOL_RESULT(lhs.num <= rhs.num);
+            return BOOL_RESULT(lhs.number <= rhs.number);
 
         if (expr->op == OPERATION__EQUAL_TO)
-            return BOOL_RESULT(lhs.type == rhs.type && lhs.num == rhs.num); // FIXME: Using `num` regardless of the type is probably error prone?
+            return BOOL_RESULT(lhs.type_primitive == rhs.type_primitive && lhs.number == rhs.number); // FIXME: Using `number` regardless of the type is probably error prone?
         if (expr->op == OPERATION__NOT_EQUAL_TO)
-            return BOOL_RESULT(lhs.type != rhs.type || lhs.num != rhs.num); // FIXME: Using `num` regardless of the type is probably error prone?
+            return BOOL_RESULT(lhs.type_primitive != rhs.type_primitive || lhs.number != rhs.number); // FIXME: Using `number` regardless of the type is probably error prone?
 
         if (expr->op == OPERATION__LOGICAL_AND)
             return BOOL_RESULT(lhs.boolean && rhs.boolean);
@@ -82,7 +82,7 @@ ExprValue evaluate_arc_expression(Arc *arc, Expression *expr, ExprValue *given_v
 void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constraints)
 {
     ExprValue given_value;
-    given_value.type = TYPE_PRIMITIVE__NUM; // TODO: This is temporary. Eventually not all variables will be numbers.
+    given_value.type_primitive = TYPE_PRIMITIVE__NUMBER; // TODO: This is temporary. Eventually not all variables will be numbers.
 
     for (size_t arc_index = 0; arc_index < constraints.single_arcs_count; arc_index++)
     {
@@ -97,7 +97,7 @@ void enforce_single_arc_constrains(QuantumMap *quantum_map, Constraints constrai
             if (!(var_bitfield & value_bitfield))
                 continue;
 
-            given_value.num = value; // TODO: This is temporary. Eventually not all variables will be numbers.
+            given_value.number = value; // TODO: This is temporary. Eventually not all variables will be numbers.
             bool result = evaluate_arc_expression(arc, arc->expr, &given_value).boolean;
 
             if (!result)
@@ -124,7 +124,7 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
     // Initialise array of expression values
     ExprValue expression_values[MAX_VARIABLES];
     for (size_t i = 0; i < MAX_VARIABLES; i++)
-        expression_values[i].type = TYPE_PRIMITIVE__NUM; // TODO: This is temporary. Eventually not all variables will be numbers.
+        expression_values[i].type_primitive = TYPE_PRIMITIVE__NUMBER; // TODO: This is temporary. Eventually not all variables will be numbers.
 
     // Enforce each arc
     for (size_t arc_index = 0; arc_index < constraints.multi_arcs_count; arc_index++)
@@ -210,7 +210,7 @@ void enforce_multi_arc_constraints(QuantumMap *quantum_map, Constraints constrai
 
                 // Evaluate the set of possible variables to determine if the primary value is a valid possibility
                 for (size_t v = 0; v < total_variables; v++)
-                    expression_values[v].num = var_value[v]; // TODO: This is temporary. Eventually not all variables will be numbers.
+                    expression_values[v].number = var_value[v]; // TODO: This is temporary. Eventually not all variables will be numbers.
                 bool result = evaluate_arc_expression(arc, arc->expr, expression_values).boolean;
 
                 if (result)
@@ -263,7 +263,7 @@ void reset_solution_values(QuantumMap *quantum_map, int ignore_index_and_before)
 
             Property *property = node->properties + p;
 
-            if (property->type == TYPE_PRIMITIVE__NUM)
+            if (property->type == TYPE_PRIMITIVE__NUMBER)
             {
                 quantum_map->variables[v] = UINT64_MAX;
             }

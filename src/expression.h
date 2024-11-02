@@ -15,7 +15,7 @@ typedef struct Node Node;
 typedef enum
 {
     TYPE_PRIMITIVE__INVALID,
-    TYPE_PRIMITIVE__NUM,
+    TYPE_PRIMITIVE__NUMBER,
     TYPE_PRIMITIVE__BOOL,
     TYPE_PRIMITIVE__NODE
 } TypePrimitive;
@@ -33,7 +33,7 @@ typedef enum
     EXPR_VARIANT__UNRESOLVED_NAME,
 
     EXPR_VARIANT__PROPERTY_NAME,
-    EXPR_VARIANT__NUMBER_LITERAL,
+    EXPR_VARIANT__LITERAL,
     EXPR_VARIANT__PLACEHOLDER,
     EXPR_VARIANT__BIN_OP,
 
@@ -65,10 +65,10 @@ typedef enum
 // ExprValue
 typedef struct
 {
-    TypePrimitive type;
+    TypePrimitive type_primitive;
     union
     {
-        int num;
+        int number;
         bool boolean;
     };
 } ExprValue;
@@ -85,10 +85,9 @@ struct Expression
         {
             sub_string name;
         };
-        // TODO: Generalise this to be a literal for any possible `ExprValue`
-        struct // NUMBER_LITERAL
+        struct // LITERAL
         {
-            int number;
+            ExprValue literal_value;
         };
         struct // PLACEHOLDER
         {
@@ -120,6 +119,7 @@ size_t precedence_of(Operation op);
 const char *type_primitive_string(TypePrimitive primitive);
 const char *expr_variant_string(ExprVariant variant);
 const char *operation_string(Operation operation);
+void print_expr_value(const ExprValue value);
 void print_expression(const Expression *expr);
 
 #endif

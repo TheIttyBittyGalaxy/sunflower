@@ -8,8 +8,8 @@ ExprType deduce_type_of(Expression *expr)
 {
     switch (expr->variant)
     {
-    case EXPR_VARIANT__NUMBER_LITERAL:
-        return (ExprType){.type = TYPE_PRIMITIVE__NUM, .node = NULL};
+    case EXPR_VARIANT__LITERAL:
+        return (ExprType){.type = TYPE_PRIMITIVE__NUMBER, .node = NULL};
 
     case EXPR_VARIANT__PLACEHOLDER:
         return (ExprType){.type = TYPE_PRIMITIVE__NODE, .node = expr->placeholder->node_type};
@@ -29,7 +29,7 @@ ExprType deduce_type_of(Expression *expr)
         case OPERATION__DIV:
         case OPERATION__ADD:
         case OPERATION__SUB:
-            return (ExprType){.type = TYPE_PRIMITIVE__NUM, .node = NULL};
+            return (ExprType){.type = TYPE_PRIMITIVE__NUMBER, .node = NULL};
 
         case OPERATION__LESS_THAN:
         case OPERATION__MORE_THAN:
@@ -95,7 +95,7 @@ const char *type_primitive_string(TypePrimitive primitive)
 {
     if (primitive == TYPE_PRIMITIVE__INVALID)
         return "INVALID";
-    if (primitive == TYPE_PRIMITIVE__NUM)
+    if (primitive == TYPE_PRIMITIVE__NUMBER)
         return "NUM";
     if (primitive == TYPE_PRIMITIVE__BOOL)
         return "BOOL";
@@ -112,8 +112,8 @@ const char *expr_variant_string(ExprVariant variant)
 
     if (variant == EXPR_VARIANT__PROPERTY_NAME)
         return "PROPERTY_NAME";
-    if (variant == EXPR_VARIANT__NUMBER_LITERAL)
-        return "NUMBER_LITERAL";
+    if (variant == EXPR_VARIANT__LITERAL)
+        return "LITERAL";
     if (variant == EXPR_VARIANT__PLACEHOLDER)
         return "PLACEHOLDER";
     if (variant == EXPR_VARIANT__BIN_OP)
@@ -161,6 +161,20 @@ const char *operation_string(Operation operation)
     return "<INVALID OPERATION>";
 }
 
+void print_expr_value(const ExprValue value)
+{
+    if (value.type_primitive == TYPE_PRIMITIVE__INVALID)
+        printf("<invalid value>");
+    else if (value.type_primitive == TYPE_PRIMITIVE__NUMBER)
+        printf("%d", value.number);
+    else if (value.type_primitive == TYPE_PRIMITIVE__BOOL)
+        printf(value.boolean ? "true" : "false");
+    else if (value.type_primitive == TYPE_PRIMITIVE__NODE)
+        printf("<node value>");
+    else
+        printf("<VALUE WITH INVALID TYPE PRIMITIVE>");
+}
+
 void print_expression(const Expression *expr)
 {
     switch (expr->variant)
@@ -177,9 +191,9 @@ void print_expression(const Expression *expr)
         break;
     }
 
-    case EXPR_VARIANT__NUMBER_LITERAL:
+    case EXPR_VARIANT__LITERAL:
     {
-        printf("%d", expr->number);
+        print_expr_value(expr->literal_value);
         break;
     }
 

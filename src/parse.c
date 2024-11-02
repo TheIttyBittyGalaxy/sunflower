@@ -188,8 +188,9 @@ Expression *parse_expression_prefix(Parser *parser, size_t max_precedence)
             num = num * 10 + ((int)(t.str.str[i]) - 48);
 
         expr = NEW(Expression);
-        expr->variant = EXPR_VARIANT__NUMBER_LITERAL;
-        expr->number = num;
+        expr->variant = EXPR_VARIANT__LITERAL;
+        expr->literal_value.type_primitive = TYPE_PRIMITIVE__NUMBER;
+        expr->literal_value.number = num;
     }
 
     // Error if prefix not found

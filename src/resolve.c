@@ -53,7 +53,7 @@ void resolve(Program *program)
             // Resolve the property's type
             if (property->type_name.len == 3 && (strncmp(property->type_name.str, "num", 3) == 0))
             {
-                property->type = TYPE_PRIMITIVE__NUM;
+                property->type = TYPE_PRIMITIVE__NUMBER;
             }
             else
             {
@@ -186,14 +186,14 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
             case OPERATION__LESS_THAN_OR_EQUAL:
             case OPERATION__MORE_THAN_OR_EQUAL:
             {
-                if (deduce_type_of(expr->lhs).type != TYPE_PRIMITIVE__NUM)
+                if (deduce_type_of(expr->lhs).type != TYPE_PRIMITIVE__NUMBER)
                 {
                     fprintf(stderr, "Expression is not a number.\n");
                     print_expression(expr->lhs);
                     exit(EXIT_FAILURE);
                 }
 
-                if (deduce_type_of(expr->rhs).type != TYPE_PRIMITIVE__NUM)
+                if (deduce_type_of(expr->rhs).type != TYPE_PRIMITIVE__NUMBER)
                 {
                     fprintf(stderr, "Expression is not a number.\n");
                     print_expression(expr->rhs);
