@@ -172,7 +172,7 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
 
                 instance_index[n]++;
 
-                if (instance_index[n] >= quantum_map->instances_count)
+                while (instance_index[n] >= quantum_map->instances_count)
                 {
                     n++;
 
