@@ -1,1 +1,1 @@
-gdb --args main examples/basic.sun 
+gdb --args main temp.sun
