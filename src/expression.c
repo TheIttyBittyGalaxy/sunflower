@@ -4,15 +4,20 @@
 #include "program.h"
 
 // Types
-ExprType deduce_type_of(Expression *expr)
+// NOTE: In this case, `rule` is essentially being used a scope, as sometimes we need
+//       to lookup a specific placeholder using it's index into the placeholders array
+ExprType deduce_type_of(Rule *rule, Expression *expr)
 {
     switch (expr->variant)
     {
     case EXPR_VARIANT__LITERAL:
         return (ExprType){.primitive = expr->literal_value.type_primitive, .node = NULL};
 
-    case EXPR_VARIANT__PLACEHOLDER:
-        return expr->placeholder->type;
+    case EXPR_VARIANT__PLACEHOLDER_VALUE:
+    {
+        Placeholder *placeholder = rule->placeholders + expr->placeholder_value_index;
+        return placeholder->type;
+    }
 
     case EXPR_VARIANT__BIN_OP:
     {
@@ -45,8 +50,9 @@ ExprType deduce_type_of(Expression *expr)
 
     case EXPR_VARIANT__PROPERTY_ACCESS:
     {
-        Node *node = expr->subject->placeholder->type.node;
-        Property *property = node->properties + expr->property_offset;
+        Placeholder *placeholder = rule->placeholders + expr->access_placeholder_index;
+        Node *node = placeholder->type.node;
+        Property *property = node->properties + expr->access_property_offset;
         return property->type;
     }
 
@@ -123,8 +129,8 @@ const char *expr_variant_string(ExprVariant variant)
 
     if (variant == EXPR_VARIANT__LITERAL)
         return "LITERAL";
-    if (variant == EXPR_VARIANT__PLACEHOLDER)
-        return "PLACEHOLDER";
+    if (variant == EXPR_VARIANT__PLACEHOLDER_VALUE)
+        return "PLACEHOLDER_VALUE";
     if (variant == EXPR_VARIANT__BIN_OP)
         return "BIN_OP";
     if (variant == EXPR_VARIANT__PROPERTY_ACCESS)
@@ -220,9 +226,9 @@ void print_expression(const Expression *expr)
         break;
     }
 
-    case EXPR_VARIANT__PLACEHOLDER:
+    case EXPR_VARIANT__PLACEHOLDER_VALUE:
     {
-        printf("%.*s¿", expr->placeholder->name.len, expr->placeholder->name.str);
+        printf("[p%d]", expr->placeholder_value_index);
         break;
     }
 
@@ -239,7 +245,7 @@ void print_expression(const Expression *expr)
 
     case EXPR_VARIANT__PROPERTY_ACCESS:
     {
-        printf("@[%d:%d]", expr->placeholder_index, expr->property_offset);
+        printf("@[%d:%d]", expr->access_placeholder_index, expr->access_property_offset);
         break;
     }
 

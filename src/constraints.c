@@ -51,10 +51,10 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
         break;
     }
 
-    case EXPR_VARIANT__PLACEHOLDER:
+    case EXPR_VARIANT__PLACEHOLDER_VALUE:
     {
         expr->variant = EXPR_VARIANT__INSTANCE_REFERENCE_INDEX;
-        expr->instance_reference_index = program_expression->placeholder->index;
+        expr->instance_reference_index = program_expression->placeholder_value_index;
         break;
     }
 
@@ -70,7 +70,7 @@ Expression *convert_expression(ConversionResult *result, Rule *rule, Expression 
     case EXPR_VARIANT__PROPERTY_ACCESS:
     {
         expr->variant = EXPR_VARIANT__VARIABLE_REFERENCE_INDEX;
-        expr->variable_reference_index = get_reference_index_or_create_one(result, program_expression->placeholder_index, program_expression->property_offset);
+        expr->variable_reference_index = get_reference_index_or_create_one(result, program_expression->access_placeholder_index, program_expression->access_property_offset);
         break;
     }
 

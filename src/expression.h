@@ -10,6 +10,7 @@
 // (We cannot include "program.h" as this would create a cyclic include)
 typedef struct Placeholder Placeholder;
 typedef struct Node Node;
+typedef struct Rule Rule;
 
 // TypePrimitive
 typedef enum
@@ -35,7 +36,7 @@ typedef enum
     EXPR_VARIANT__UNRESOLVED_NAME,
 
     EXPR_VARIANT__LITERAL,
-    EXPR_VARIANT__PLACEHOLDER,
+    EXPR_VARIANT__PLACEHOLDER_VALUE,
     EXPR_VARIANT__BIN_OP, // CLEANUP: Rename to `BINARY_OPERATION`
     EXPR_VARIANT__PROPERTY_ACCESS,
 
@@ -92,9 +93,9 @@ struct Expression
         {
             ExprValue literal_value;
         };
-        struct // PLACEHOLDER
+        struct // PLACEHOLDER_VALUE
         {
-            Placeholder *placeholder;
+            size_t placeholder_value_index;
         };
         struct // BIN_OP
         {
@@ -104,10 +105,9 @@ struct Expression
         };
         struct // PROPERTY_ACCESS
         {
-            Expression *subject;
             sub_string property_name;
-            size_t placeholder_index;
-            size_t property_offset;
+            size_t access_placeholder_index;
+            size_t access_property_offset;
         };
         struct // VARIABLE_REFERENCE_INDEX
         {
@@ -121,7 +121,7 @@ struct Expression
 };
 
 // Types
-ExprType deduce_type_of(Expression *expr);
+ExprType deduce_type_of(Rule *rule, Expression *expr);
 
 // Precedence
 typedef size_t Precedence;

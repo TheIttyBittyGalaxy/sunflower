@@ -42,12 +42,14 @@ struct Placeholder
 };
 
 // Rule
-typedef struct
+// Rule is declared differently here as it is forward declared in "expression.h"
+// CLEANUP: Is there a better way of doing this?
+struct Rule
 {
     Placeholder *placeholders;
     size_t placeholders_count;
     Expression *expression;
-} Rule;
+};
 
 // Program
 typedef struct
