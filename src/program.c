@@ -26,7 +26,8 @@ void print_node(const Node *node)
 
         Property p = node->properties[i];
         printf("%.*s: ", p.name.len, p.name.str);
-        print_expr_type(p.type, p.type_name);
+        print_expr_type(p.type);
+        printf(" (%.*s)", p.type_name.len, p.type_name.str);
     }
     printf(" }\n");
 }
