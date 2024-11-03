@@ -1,0 +1,6 @@
+DEF Person {
+    buddy: Person
+}
+
+FOR Person x: x.buddy != x
+FOR Person x: x.buddy.buddy = x

@@ -1,6 +1,0 @@
-DEF Thing {
-    buddy: Thing
-}
-
-FOR Thing x: x.buddy != x
-FOR Thing x: x.buddy.buddy = x

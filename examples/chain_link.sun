@@ -1,0 +1,6 @@
+DEF Chain {
+    next: Chain
+}
+
+FOR Chain x: x.next != x
+FOR Chain x Thing y: x.next != y.next

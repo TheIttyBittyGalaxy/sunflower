@@ -1,0 +1,7 @@
+DEF Link {
+    next: Link
+    prev: Link
+}
+
+FOR Link x: x.next != x
+FOR Link x: x.next.prev = x
