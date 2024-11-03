@@ -134,6 +134,7 @@ void parse_rule(Parser *parser)
         placeholder->index = rule->placeholders_count - 1;
         placeholder->type.primitive = TYPE_PRIMITIVE__UNRESOLVED;
         placeholder->type.node = NULL;
+        placeholder->intermediate = false;
 
         Token node_name = eat(parser, NAME);
         placeholder->type_name = node_name.str;

@@ -140,8 +140,9 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
     {
         // Skip combinations of instances until we find a combination that patch the placeholders of the rule
 
-        // TODO: For right now, we say that two place holders of the same node type cannot represent the same instance.
-        //       This is a "for now" solution, but I'm not sure what the semantics here really ought to be?
+        // TODO: For right now, we say that two non-intermediate placeholders of the same node type
+        //       cannot represent the same instance. This is a "for now" solution, but I'm not sure
+        //       what the semantics here really ought to be?
 
         // CLEANUP: This code _works_, but it probably isn't particularly efficient!
 
@@ -150,25 +151,38 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
         //          - 000.foo = 001.foo (2 rotations)
         //          - 001.foo = 000.foo (2 rotations)
         //          Once the semantics for rule selectors are decided, look into how this can best be optimised!
+
+        // Increment set of instance indexes
         {
             bool complete = false;
             size_t n = 0;
             while (n < total_placeholders)
             {
                 QuantumInstance *instance = quantum_map->instances + instance_index[n];
-                if (instance->node == rule->placeholders[n].type.node)
+                Placeholder *placeholder = rule->placeholders + n;
+
+                // If the instance at the current index is valid
+                if (instance->node == placeholder->type.node)
                 {
+                    // Prevent non-intermediate placeholders from being the same index as others
                     bool no_repeats = true;
-                    for (size_t v = 0; v < n; v++)
+                    if (!placeholder->intermediate)
                     {
-                        if (instance_index[v] == instance_index[n])
+                        for (size_t v = 0; v < n; v++)
                         {
-                            no_repeats = false;
-                            n = v;
-                            break;
+                            if ((rule->placeholders + v)->intermediate)
+                                continue;
+
+                            if (instance_index[v] == instance_index[n])
+                            {
+                                no_repeats = false;
+                                n = v;
+                                break;
+                            }
                         }
                     }
 
+                    // Move onto next placeholder
                     if (no_repeats)
                     {
                         n++;
@@ -176,6 +190,7 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
                     }
                 }
 
+                // Move onto next index
                 instance_index[n]++;
 
                 while (instance_index[n] >= quantum_map->instances_count)

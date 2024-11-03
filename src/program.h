@@ -39,6 +39,7 @@ struct Placeholder
     sub_string type_name;
     ExprType type;
     size_t index; // The placeholder's index in the rule's array of placeholders
+    bool intermediate;
 };
 
 // Rule

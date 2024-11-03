@@ -232,6 +232,7 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr, R
                 strncpy(temp_str + 1, property_name.str, property_name.len);
                 temp_str[property_name.len + 1] = '\0';
                 intermediate->name = (sub_string){.str = temp_str, .len = property_name.len + 1};
+                intermediate->intermediate = true;
 
                 property_access->access_placeholder_index = intermediate->index;
 
