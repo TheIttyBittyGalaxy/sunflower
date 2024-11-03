@@ -1,6 +1,6 @@
 DEF Thing {
-    a: num
-    b: num
+    buddy: Thing
 }
 
-FOR Thing x: 10 = x.a + x.b + 0
+FOR Thing x: x.buddy != x
+FOR Thing x: x.buddy.buddy = x

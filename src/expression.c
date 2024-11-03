@@ -245,13 +245,13 @@ void print_expression(const Expression *expr)
 
     case EXPR_VARIANT__VARIABLE_REFERENCE_INDEX:
     {
-        printf("[V%d]", expr->variable_reference_index);
+        printf("[v%d]", expr->variable_reference_index);
         break;
     }
 
     case EXPR_VARIANT__INSTANCE_REFERENCE_INDEX:
     {
-        printf("[I%d]", expr->instance_reference_index);
+        printf("[i%d]", expr->instance_reference_index);
         break;
     }
 

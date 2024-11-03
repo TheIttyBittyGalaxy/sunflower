@@ -40,7 +40,8 @@ void print_rule(const Rule *rule)
         if (i > 0)
             printf(", ");
         Placeholder placeholder = rule->placeholders[i];
-        printf("%.*s %.*s", placeholder.type_name.len, placeholder.type_name.str, placeholder.name.len, placeholder.name.str);
+        print_expr_type(placeholder.type);
+        printf(" %.*s", placeholder.name.len, placeholder.name.str);
     }
     printf(" -> ");
     print_expression(rule->expression);

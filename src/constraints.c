@@ -115,6 +115,7 @@ void create_arcs_from_rule(Constraints *constraints, Rule *rule, QuantumMap *qua
 
             Arc *arc = EXTEND_ARRAY(constraints->single_arcs, Arc);
             arc->expr = arc_expression;
+            arc->expr_rotation = 0;
 
             arc->variable_indexes_count = 1;
             arc->variable_indexes = (size_t *)malloc(sizeof(size_t));
@@ -259,7 +260,8 @@ Constraints create_constraints(Program *program, QuantumMap *quantum_map)
 void print_arc(Arc *arc)
 {
     for (size_t i = 0; i < arc->variable_indexes_count; i++)
-        printf("%03d  ", (arc->variable_indexes[i] + arc->expr_rotation) % arc->variable_indexes_count);
+        printf("%03d ", (arc->variable_indexes[(i + arc->expr_rotation) % arc->variable_indexes_count]), arc->expr_rotation);
+    printf(": %d  ", arc->expr_rotation);
     print_expression(arc->expr);
 }
 

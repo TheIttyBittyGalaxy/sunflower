@@ -1,13 +1,20 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "memory.h"
 #include "resolve.h"
 
 // TODO: Create language errors, rather than terminating the entire program
 // TODO: Update errors for maximum usability (i.e. clear error messages, line numbers, etc)
 
 // Resolve methods
-Expression *resolve_expression(Program *program, Rule *rule, Expression *expr);
+typedef struct
+{
+    Expression *conditions;
+    size_t conditions_count;
+} RuleConditions;
+
+Expression *resolve_expression(Program *program, Rule *rule, Expression *expr, RuleConditions *conditions);
 
 void resolve(Program *program)
 {
@@ -123,11 +130,24 @@ void resolve(Program *program)
         }
 
         // Resolve rule expression
-        rule->expression = resolve_expression(program, rule, rule->expression);
+        RuleConditions conditions;
+        INIT_ARRAY(conditions.conditions);
+        Expression *expr = resolve_expression(program, rule, rule->expression, &conditions);
+        for (size_t i = 0; i < conditions.conditions_count; i++)
+        {
+            Expression *conditional_expr = NEW(Expression);
+            conditional_expr->variant = EXPR_VARIANT__BIN_OP;
+            conditional_expr->op = OPERATION__LOGICAL_OR;
+            conditional_expr->lhs = conditions.conditions + i;
+            conditional_expr->rhs = expr;
+            expr = conditional_expr;
+        }
+
+        rule->expression = expr;
     }
 }
 
-Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
+Expression *resolve_expression(Program *program, Rule *rule, Expression *expr, RuleConditions *conditions)
 {
     if (expr->variant == EXPR_VARIANT__UNRESOLVED_NAME)
     {
@@ -168,33 +188,82 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
     {
         if (expr->op == OPERATION__ACCESS)
         {
-            // TODO: Currently we only support shallow indexing of a placeholder value. Support nested indexing.
-
             // Check expressions
-            Expression *subject = resolve_expression(program, rule, expr->lhs);
-            if (subject->variant != EXPR_VARIANT__PLACEHOLDER)
+            Expression *subject = resolve_expression(program, rule, expr->lhs, conditions);
+            ExprType subject_type = deduce_type_of(subject);
+
+            if (subject_type.primitive != TYPE_PRIMITIVE__NODE)
             {
-                fprintf(stderr, "Internal error: Indexing expressions which are not placeholders is not yet supported.\n");
+                fprintf(stderr, "Cannot index a non-node value.\n");
                 print_expression(expr);
                 exit(EXIT_FAILURE);
             }
 
             if (expr->rhs->variant != EXPR_VARIANT__UNRESOLVED_NAME)
             {
-                fprintf(stderr, "Index into placeholder is invalid.\n");
+                fprintf(stderr, "Index into node is invalid.\n");
                 print_expression(expr);
                 exit(EXIT_FAILURE);
             }
             sub_string property_name = expr->rhs->name;
 
             // Convert BIN_OP to PROPERTY_ACCESS
-            Placeholder *placeholder = subject->placeholder;
-            Node *node = placeholder->type.node;
+            Placeholder *placeholder = NULL;
 
-            expr->variant = EXPR_VARIANT__PROPERTY_ACCESS;
-            expr->subject = subject;
+            if (subject->variant == EXPR_VARIANT__PLACEHOLDER)
+            {
+                placeholder = subject->placeholder;
+
+                expr->variant = EXPR_VARIANT__PROPERTY_ACCESS;
+                expr->subject = subject;
+                expr->property_name = property_name;
+            }
+
+            else if (subject->variant == EXPR_VARIANT__PROPERTY_ACCESS)
+            {
+                // TODO: Avoid creating multiple placeholders for identical indexes
+
+                // Create a new placeholder to substitute the nested index
+                placeholder = EXTEND_ARRAY(rule->placeholders, Placeholder);
+                placeholder->index = rule->placeholders_count - 1;
+                placeholder->type = subject_type;
+                placeholder->type_name = NULL_SUB_STRING;
+                char *temp_str = (char *)malloc(sizeof(char) * property_name.len + 2); // FIXME: This is a memory leak!
+                temp_str[0] = '~';
+                strncpy(temp_str + 1, property_name.str, property_name.len);
+                temp_str[property_name.len + 1] = '\0';
+                placeholder->name = (sub_string){.str = temp_str, .len = property_name.len + 1}; // TODO: Create a string for debugging purposes
+
+                // Add the condition `new_placeholder = subject.property` to the rule
+                // (except actually we have to add the inverse condition, as this tells the solver
+                // the rule is satisfied in any situation where the condition isn't met)
+                Expression *condition = EXTEND_ARRAY(conditions->conditions, Expression);
+                condition->variant = EXPR_VARIANT__BIN_OP;
+                condition->op = OPERATION__NOT_EQUAL_TO;
+
+                condition->lhs = NEW(Expression);
+                condition->lhs->variant = EXPR_VARIANT__PLACEHOLDER;
+                condition->lhs->placeholder = placeholder;
+
+                condition->rhs = expr->lhs;
+
+                // Modify the expression
+                expr->variant = EXPR_VARIANT__PROPERTY_ACCESS;
+                expr->subject = NEW(Expression);
+                expr->subject->variant = EXPR_VARIANT__PLACEHOLDER;
+                expr->subject->placeholder = placeholder;
+                expr->property_name = property_name;
+            }
+
+            else
+            {
+                fprintf(stderr, "Internal error: Cannot resolve index into %s node.\n", expr_variant_string(subject->variant));
+                print_expression(expr);
+                exit(EXIT_FAILURE);
+            }
 
             expr->placeholder_index = placeholder->index;
+            Node *node = placeholder->type.node;
             for (size_t i = 0; i < node->properties_count; i++)
             {
                 Property *property = node->properties + i;
@@ -207,8 +276,8 @@ Expression *resolve_expression(Program *program, Rule *rule, Expression *expr)
         }
         else
         {
-            expr->lhs = resolve_expression(program, rule, expr->lhs);
-            expr->rhs = resolve_expression(program, rule, expr->rhs);
+            expr->lhs = resolve_expression(program, rule, expr->lhs, conditions);
+            expr->rhs = resolve_expression(program, rule, expr->rhs, conditions);
 
             switch (expr->op)
             {
